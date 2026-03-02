@@ -36,21 +36,28 @@ void rxdr_callback(RF_HandleTypeDef *hrf)
     }
     rf_int_count_rxdr++;
 }
-//发送完成中断回调函数，切换pipe0到监听slave0地址
+//发送完成中断回调函数
 void txds_callback(RF_HandleTypeDef *hrf)
 {
-    //HAL_RF_SetRxAddress(hrf, 0, Init_S.Protocol.RxPipes[0].Address, Init_S.Protocol.AddressWidth);
     rf_int_count_txds++;
-    //uart_printf("tx=%d\n", rf_int_count_txds);
 
+    // 发送完成后恢复Pipe0地址
+    app_addr_tx_restore();
+
+    // 切换到RX模式
+    HAL_RF_SetRxMode(hrf);
 }
 
-//达到最大重传中断回调函数，切换pipe0到监听slave0地址
+//达到最大重传中断回调函数
 void maxrt_callback(RF_HandleTypeDef *hrf)
 {
-    //HAL_RF_SetRxAddress(hrf, 0, Init_S.Protocol.RxPipes[0].Address, Init_S.Protocol.AddressWidth);
     rf_int_count_maxrt++;
-    //uart_printf("rt=%d\n", rf_int_count_maxrt);
+
+    // 发送失败后也要恢复Pipe0地址
+    app_addr_tx_restore();
+
+    // 切换到RX模式
+    HAL_RF_SetRxMode(hrf);
 }
 
 //初始化默认参数配置结构体
@@ -139,7 +146,7 @@ RF_ConfgTypeDef Init_default_S=
 };
 
 
-#include "app_addr_manage.h"
+#include "rf_addr_mgr.h"
 
 void RF_Handler_Init(void)
 {
@@ -266,9 +273,8 @@ void RF_Service_Handler(RF_HandleTypeDef *hrf)
     else{
         // 队列虽然空了，但如果发送还没完成 (BUSY)，则不能切RX
         if(hrf->TxState != TX_BUSY_Tramsmit) {
-            // 发送完成，恢复 Pipe0 地址
-            app_addr_tx_restore();
-            HAL_RF_SetRxMode(hrf); 
+            // 中断回调已处理地址恢复，这里只确保RX模式
+            HAL_RF_SetRxMode(hrf);
         }
     }
 }

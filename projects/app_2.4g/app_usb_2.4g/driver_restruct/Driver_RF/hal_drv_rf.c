@@ -6,9 +6,6 @@
 #include <string.h> 
 #include "hal_drv_rf.h"
 #include "timer_handler.h"
-#include "app_addr_manage.h"
-
-
 #define UART_PRINTF    uart_printf
 int uart_printf(const char *fmt,...);
 
@@ -696,10 +693,8 @@ void HAL_RF_IRQ_Handler(RF_HandleTypeDef *hrf)
         __HAL_RF_CLEAR_IRQ_FLAGS(IRQ_TX_DS_MASK);
         //__HAL_RF_CMD_FLUSH_TXFIFO();
         hrf->TxState = TX_IDLE;
-        app_addr_tx_restore(); //发送完成后恢复 Pipe0 地址
-        HAL_RF_SetRxMode(hrf); //发送完成后切换到接收模式
     }
-        
+
     if(__HAL_RF_GET_IRQ_FLAGS(IRQ_MAX_RT_MASK)){
          uart_printf("in MAX_RT\r\n");
         hrf->TxState = TX_Tramsmit_FAIL;
@@ -708,10 +703,8 @@ void HAL_RF_IRQ_Handler(RF_HandleTypeDef *hrf)
         }
         __HAL_RF_CLEAR_IRQ_FLAGS(IRQ_MAX_RT_MASK);
         __HAL_RF_CMD_FLUSH_TXFIFO();//发送失败必须要清空TX FIFO，下次才能继续写FIFO发送
-        
+
         hrf->TxState = TX_IDLE;
-        app_addr_tx_restore(); //发送完成后恢复Pipe0地址
-        HAL_RF_SetRxMode(hrf); //发送失败后切换到接收模式
     }
 
    // return;

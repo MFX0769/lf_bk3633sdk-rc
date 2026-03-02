@@ -57,7 +57,7 @@
 #include "gpio_init.h"
 #include "app_sleep.h"
 #include "app_key_scan.h"
-#include "app_addr_manage.h"
+#include "rf_addr_mgr.h"
 
 
 

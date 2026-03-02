@@ -338,7 +338,7 @@
               <MiscControls>--gnu</MiscControls>
               <Define>CFG_CPU_BK3633</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\..\src\ip\ble\ll\api;..\..\..\src\ip\ble\ll\import\reg;..\..\..\src\ip\ble\ll\src;..\..\..\src\ip\bt\api;..\..\..\src\ip\bt\import\reg;..\..\..\src\ip\bt\src;..\..\..\src\ip\em\api;..\..\..\src\ip\hci\api;..\..\..\src\ip\sch\api;..\..\..\src\ip\sch\import;..\..\..\src\modules\aes\api;..\..\..\src\modules\common\api;..\..\..\src\modules\dbg\api;..\..\..\src\modules\ecc_p256\api;..\..\..\src\modules\h4tl\api;..\..\..\src\modules\ke\api;..\..\..\src\plf\nvds\api;..\..\..\src\driver\rf;..\..\..\src\plf\rwip\api;..\..\..\src\plf\rwip\import\reg;..\..\..\src\plf\refip\import\reg;..\..\..\src\plf\refip\src\arch;..\..\..\src\plf\refip\src\arch\boot\rvds;..\..\..\src\plf\refip\src\arch\compiler\rvds;..\..\..\src\plf\refip\src\arch\ll\rvds;..\..\..\src\driver\flash;..\..\..\src\driver\led;..\..\..\src\driver\reg;..\..\..\src\driver\syscntl;..\..\..\src\driver\timer;..\..\..\src\driver\uart;..\..\..\src\driver\uart2;..\..\..\Src\header;..\..\..\Src\header\header_file;..\..\..\Src\plf\refip\src\driver;..\..\..\Src\ip\ble\hl\api;..\..\..\Src\ip\ble\hl\inc;..\..\..\Src\ip\ble\hl\src\gap\gapc;..\..\..\Src\ip\ble\hl\src\gap\gapm;..\..\..\Src\ip\ble\hl\src\gatt;..\..\..\Src\ip\ble\hl\src\gatt\attc;..\..\..\Src\ip\ble\hl\src\gatt\attm;..\..\..\Src\ip\ble\hl\src\gatt\atts;..\..\..\Src\ip\ble\hl\src\gatt\gattc;..\..\..\Src\ip\ble\hl\src\gatt\gattm;..\..\..\Src\ip\ble\hl\src\l2c\l2cc;..\..\..\Src\ip\ble\hl\src\l2c\l2cm;..\..\..\Src\app\api;..\..\..\Src\profiles\dis\diss\api;..\..\..\Src\profiles\FEE0\api;..\..\..\Src\profiles\bas\bass\api;..\..\..\Src\profiles\FCC0_128\api;..\..\..\Src\driver\spi;..\..\..\Src\driver\icu;..\..\..\Src\driver\wdt;..\..\..\Src\driver\adc;..\..\..\Src\profiles\ancs\ancsc\api;..\..\..\Src\profiles\oad\api;..\..\..\Src\profiles\ancs\ancsc;.\system;.\app\api;..\..\..\src\driver\uart2;..\..\..\src\driver\aon_rtc;..\..\..\src\plf\prf;..\..\..\Src\driver\intc;..\..\..\src\driver\dma;..\..\..\src\driver\i2c;..\..\..\src\device\lcd;..\..\..\src\device\spi_flash;..\..\..\src\driver\usb;..\..\..\src\driver\usb\include;..\..\..\src\driver\usb\include\class;..\..\..\src\driver\usb\src\cd;..\..\..\src\driver\usb\src\drivers\comm;..\..\..\src\driver\usb\src\drivers\msd;..\..\..\src\driver\usb\src\examples;..\..\..\src\driver\usb\src\functions\trans_fn;..\..\..\src\driver\usb\src\systems\none;..\..\..\src\driver\usb\src\systems\none\afs;..\..\..\src\driver\usb\src\test;..\..\..\src\driver\usb\src\test\msd;.\app\src\2.4;..\..\..\src\driver\sensor;..\..\..\src\driver\timer;..\..\..\src\driver\flash;..\..\..\src\driver\usb_driver;..\..\..\src\driver\usb_driver\usb;.\driver_restruct\common;.\driver_restruct\Driver_RF;.\driver_restruct\Driver_Uart2;.\Handler\RF_Handler;.\Handler\Timer_Handler;.\driver_restruct\common\queue;.\app\src\bat_transmit;.\driver_restruct\Driver_GPIO;.\driver_restruct\Driver_Uart;.\app\src\remote_control</IncludePath>
+              <IncludePath>..\..\..\src\ip\ble\ll\api;..\..\..\src\ip\ble\ll\import\reg;..\..\..\src\ip\ble\ll\src;..\..\..\src\ip\bt\api;..\..\..\src\ip\bt\import\reg;..\..\..\src\ip\bt\src;..\..\..\src\ip\em\api;..\..\..\src\ip\hci\api;..\..\..\src\ip\sch\api;..\..\..\src\ip\sch\import;..\..\..\src\modules\aes\api;..\..\..\src\modules\common\api;..\..\..\src\modules\dbg\api;..\..\..\src\modules\ecc_p256\api;..\..\..\src\modules\h4tl\api;..\..\..\src\modules\ke\api;..\..\..\src\plf\nvds\api;..\..\..\src\driver\rf;..\..\..\src\plf\rwip\api;..\..\..\src\plf\rwip\import\reg;..\..\..\src\plf\refip\import\reg;..\..\..\src\plf\refip\src\arch;..\..\..\src\plf\refip\src\arch\boot\rvds;..\..\..\src\plf\refip\src\arch\compiler\rvds;..\..\..\src\plf\refip\src\arch\ll\rvds;..\..\..\src\driver\flash;..\..\..\src\driver\led;..\..\..\src\driver\reg;..\..\..\src\driver\syscntl;..\..\..\src\driver\timer;..\..\..\src\driver\uart;..\..\..\src\driver\uart2;..\..\..\Src\header;..\..\..\Src\header\header_file;..\..\..\Src\plf\refip\src\driver;..\..\..\Src\ip\ble\hl\api;..\..\..\Src\ip\ble\hl\inc;..\..\..\Src\ip\ble\hl\src\gap\gapc;..\..\..\Src\ip\ble\hl\src\gap\gapm;..\..\..\Src\ip\ble\hl\src\gatt;..\..\..\Src\ip\ble\hl\src\gatt\attc;..\..\..\Src\ip\ble\hl\src\gatt\attm;..\..\..\Src\ip\ble\hl\src\gatt\atts;..\..\..\Src\ip\ble\hl\src\gatt\gattc;..\..\..\Src\ip\ble\hl\src\gatt\gattm;..\..\..\Src\ip\ble\hl\src\l2c\l2cc;..\..\..\Src\ip\ble\hl\src\l2c\l2cm;..\..\..\Src\app\api;..\..\..\Src\profiles\dis\diss\api;..\..\..\Src\profiles\FEE0\api;..\..\..\Src\profiles\bas\bass\api;..\..\..\Src\profiles\FCC0_128\api;..\..\..\Src\driver\spi;..\..\..\Src\driver\icu;..\..\..\Src\driver\wdt;..\..\..\Src\driver\adc;..\..\..\Src\profiles\ancs\ancsc\api;..\..\..\Src\profiles\oad\api;..\..\..\Src\profiles\ancs\ancsc;.\system;.\app\api;..\..\..\src\driver\uart2;..\..\..\src\driver\aon_rtc;..\..\..\src\plf\prf;..\..\..\Src\driver\intc;..\..\..\src\driver\dma;..\..\..\src\driver\i2c;..\..\..\src\device\lcd;..\..\..\src\device\spi_flash;..\..\..\src\driver\usb;..\..\..\src\driver\usb\include;..\..\..\src\driver\usb\include\class;..\..\..\src\driver\usb\src\cd;..\..\..\src\driver\usb\src\drivers\comm;..\..\..\src\driver\usb\src\drivers\msd;..\..\..\src\driver\usb\src\examples;..\..\..\src\driver\usb\src\functions\trans_fn;..\..\..\src\driver\usb\src\systems\none;..\..\..\src\driver\usb\src\systems\none\afs;..\..\..\src\driver\usb\src\test;..\..\..\src\driver\usb\src\test\msd;.\app\src\2.4;..\..\..\src\driver\sensor;..\..\..\src\driver\timer;..\..\..\src\driver\flash;..\..\..\src\driver\usb_driver;..\..\..\src\driver\usb_driver\usb;.\driver_restruct\common;.\driver_restruct\Driver_RF;.\driver_restruct\Driver_Uart2;.\Handler\RF_Handler;.\Handler\Timer_Handler;.\driver_restruct\common\queue;.\app\src\bat_transmit;.\driver_restruct\Driver_GPIO;.\driver_restruct\Driver_Uart;.\app\src\remote_control;.\app\src\rf_service</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -453,26 +453,6 @@
               <FilePath>.\app\src\remote_control\app_sleep.h</FilePath>
             </File>
             <File>
-              <FileName>app_addr_manage.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\app\src\remote_control\app_addr_manage.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_addr_manage.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\app\src\remote_control\app_addr_manage.h</FilePath>
-            </File>
-            <File>
-              <FileName>rf_protocol.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\app\src\remote_control\rf_protocol.c</FilePath>
-            </File>
-            <File>
-              <FileName>rf_protocol.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\app\src\remote_control\rf_protocol.h</FilePath>
-            </File>
-            <File>
               <FileName>rc_scheduler.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\app\src\remote_control\rc_scheduler.c</FilePath>
@@ -498,16 +478,6 @@
               <FilePath>.\app\src\bat_transmit\bat_protocol.h</FilePath>
             </File>
             <File>
-              <FileName>addr_pool.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\app\src\bat_transmit\addr_pool.c</FilePath>
-            </File>
-            <File>
-              <FileName>addr_pool.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\app\src\bat_transmit\addr_pool.h</FilePath>
-            </File>
-            <File>
               <FileName>gpio_init.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\app\src\bat_transmit\gpio_init.c</FilePath>
@@ -517,66 +487,50 @@
               <FileType>5</FileType>
               <FilePath>.\app\src\bat_transmit\gpio_init.h</FilePath>
             </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Application/rf_service</GroupName>
+          <Files>
+            <File>
+              <FileName>rf_addr_mgr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\app\src\rf_service\rf_addr_mgr.c</FilePath>
+            </File>
+            <File>
+              <FileName>rf_addr_mgr.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\app\src\rf_service\rf_addr_mgr.h</FilePath>
+            </File>
             <File>
               <FileName>rf_pair.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\app\src\bat_transmit\rf_pair.c</FilePath>
-              <FileOption>
-                <CommonProperty>
-                  <UseCPPCompiler>2</UseCPPCompiler>
-                  <RVCTCodeConst>0</RVCTCodeConst>
-                  <RVCTZI>0</RVCTZI>
-                  <RVCTOtherData>0</RVCTOtherData>
-                  <ModuleSelection>0</ModuleSelection>
-                  <IncludeInBuild>1</IncludeInBuild>
-                  <AlwaysBuild>2</AlwaysBuild>
-                  <GenerateAssemblyFile>2</GenerateAssemblyFile>
-                  <AssembleAssemblyFile>2</AssembleAssemblyFile>
-                  <PublicsOnly>2</PublicsOnly>
-                  <StopOnExitCode>11</StopOnExitCode>
-                  <CustomArgument></CustomArgument>
-                  <IncludeLibraryModules></IncludeLibraryModules>
-                  <ComprImg>1</ComprImg>
-                </CommonProperty>
-                <FileArmAds>
-                  <Cads>
-                    <interw>2</interw>
-                    <Optim>0</Optim>
-                    <oTime>2</oTime>
-                    <SplitLS>2</SplitLS>
-                    <OneElfS>2</OneElfS>
-                    <Strict>2</Strict>
-                    <EnumInt>2</EnumInt>
-                    <PlainCh>2</PlainCh>
-                    <Ropi>2</Ropi>
-                    <Rwpi>2</Rwpi>
-                    <wLevel>0</wLevel>
-                    <uThumb>2</uThumb>
-                    <uSurpInc>2</uSurpInc>
-                    <uC99>2</uC99>
-                    <uGnu>2</uGnu>
-                    <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
-                    <vShortEn>2</vShortEn>
-                    <vShortWch>2</vShortWch>
-                    <v6Lto>2</v6Lto>
-                    <v6WtE>2</v6WtE>
-                    <v6Rtti>2</v6Rtti>
-                    <VariousControls>
-                      <MiscControls></MiscControls>
-                      <Define></Define>
-                      <Undefine></Undefine>
-                      <IncludePath></IncludePath>
-                    </VariousControls>
-                  </Cads>
-                </FileArmAds>
-              </FileOption>
+              <FilePath>.\app\src\rf_service\rf_pair.c</FilePath>
             </File>
             <File>
               <FileName>rf_pair.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\app\src\bat_transmit\rf_pair.h</FilePath>
+              <FilePath>.\app\src\rf_service\rf_pair.h</FilePath>
+            </File>
+            <File>
+              <FileName>addr_pool.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\app\src\rf_service\addr_pool.c</FilePath>
+            </File>
+            <File>
+              <FileName>addr_pool.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\app\src\rf_service\addr_pool.h</FilePath>
+            </File>
+            <File>
+              <FileName>rf_protocol.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\app\src\rf_service\rf_protocol.c</FilePath>
+            </File>
+            <File>
+              <FileName>rf_protocol.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\app\src\rf_service\rf_protocol.h</FilePath>
             </File>
           </Files>
         </Group>
