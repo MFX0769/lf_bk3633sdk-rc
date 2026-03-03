@@ -34,7 +34,7 @@
 #define ADC_DRIVER                1
 #define I2C_DRIVER                0
 #define PWM_DRIVER                0
-#define USB_DRIVER              1
+#define USB_DRIVER              0
 #define SPI_DRIVER              0
 #define AON_RTC_DRIVER          0
 

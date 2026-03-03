@@ -59,7 +59,7 @@
 #include "app_key_scan.h"
 #include "rf_addr_mgr.h"
 
-
+#include "gpio_leakage_test.h"
 
 extern void  xvr_reg_initial_24(void);
 uint8_t uart_rx_en;
@@ -329,6 +329,7 @@ void app_key_event_handler(key_id_t id, key_event_t event)
 
 int main(void)
 {
+    
     icu_init();
     //wdt_disable();
     intc_init();
@@ -567,6 +568,41 @@ int main(void)
     // {
     //     Host_Pairing_Task(&pair_flag); //非阻塞配对任务调用
     // }
+
+
+    /* 引脚漏电测试 */
+    gpio_set_all_lowpower(1);  // 全部上拉，测量电流 大板子:5.06mA
+    //gpio_set_all_lowpower(2);  // 全部下拉，测量电流 大板子:5.31mA
+    //gpio_set_all_lowpower(0);  // 全部浮空，测量电流 大板子:5.05mA
+
+    //gpio_binary_test(0, 15, GPIO_PULL_HIGH);   // 测试 GPIO 0-15 5.07mA
+    //gpio_binary_test(16, 31, GPIO_PULL_HIGH);  // 测试 GPIO 16-31 5.32mA
+
+
+    // RF_Handler_Init();//初始化RF句柄及队列
+    // __HAL_RF_PowerDown();
+
+    //14,15,20,21
+    // gpio_config(Port_Pin(1,4), GPIO_OUTPUT, GPIO_PULL_NONE);
+    // gpio_config(Port_Pin(1,5), GPIO_OUTPUT, GPIO_PULL_NONE);
+    // gpio_config(Port_Pin(2,0), GPIO_OUTPUT, GPIO_PULL_NONE);
+    // gpio_config(Port_Pin(2,1), GPIO_OUTPUT, GPIO_PULL_NONE);
+
+    // gpio_set(Port_Pin(1,4),0);
+    // gpio_set(Port_Pin(1,5),0);
+    // gpio_set(Port_Pin(2,0),0);
+    // gpio_set(Port_Pin(2,1),0);
+
+    //cpu_24_reduce_voltage_sleep(); //进入低电压睡眠
+
+    while(1){
+        //全部上拉，低功耗570uA；全部下拉低功耗接近900uA
+        app_enter_sleep_with_wakeup_by_timer(10000); //进入睡眠10秒
+        delay_ms(5000);
+    };
+
+
+
     /*----------------------------测试按键功能--------------------------------------*/
      const key_config_t my_keys[] = {
         {KEY_ID_LEFT,   Port_Pin(0, 2), 2000, false}, // Left Key: 3s Long Press
