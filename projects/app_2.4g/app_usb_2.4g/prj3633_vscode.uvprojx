@@ -1132,6 +1132,16 @@
               <FileType>5</FileType>
               <FilePath>.\driver_restruct\common\queue\my_queue.h</FilePath>
             </File>
+            <File>
+              <FileName>debug.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\driver_restruct\common\debug\debug.c</FilePath>
+            </File>
+            <File>
+              <FileName>debug.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\driver_restruct\common\debug\debug.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

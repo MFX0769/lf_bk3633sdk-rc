@@ -65,7 +65,7 @@ RF_ConfgTypeDef Init_default_S=
 {
     .Mode = MODE_TX,
     .DataRate = BPS_1M,
-    .TxPower = RF_TX_POWER_N8p6_dBm,
+    .TxPower = RF_TX_POWER_P0p5_dBm,
     .Channel = 0x05, // 频道5
     .Protocol ={
         .AddressWidth = 5,

@@ -57,53 +57,6 @@
 
 
 extern void  xvr_reg_initial_24(void);
-uint8_t uart_rx_en;
-static void printf_all_registers(void)
-{
-    uart_printf("TRX_CONFIG     = 0x%02X\r\n", TRX_CONFIG);
-    uart_printf("TRX_EN_AA      = 0x%02X\r\n", TRX_EN_AA);
-    uart_printf("TRX_EN_RXADDR  = 0x%02X\r\n", TRX_EN_RXADDR);
-    uart_printf("TRX_SETUP_AW   = 0x%02X\r\n", TRX_SETUP_AW);
-    uart_printf("TRX_SETUP_RETR = 0x%02X\r\n", TRX_SETUP_RETR);
-    uart_printf("TRX_RF_CH      = 0x%02X\r\n", TRX_RF_CH);
-    uart_printf("TRX_RF_SETUP   = 0x%02X\r\n", TRX_RF_SETUP);
-
-    uart_printf("TRX_RX_ADDR_P0 = ");
-    //for(int i=0;i<5;i++) uart_printf("%02X ", (volatile uint32_t*)(&TRX_RX_ADDR_P0_0)[i]);
-    uart_printf("\r\n");
-
-    uart_printf("TRX_RX_ADDR_P1 = ");
-    //for(int i=0;i<5;i++) uart_printf("%02X ", (volatile uint32_t*)(&TRX_RX_ADDR_P1_0)[i]);
-    uart_printf("\r\n");
-
-    uart_printf("TRX_RX_ADDR_P2 = 0x%02X\r\n", TRX_RX_ADDR_P2);
-    uart_printf("TRX_RX_ADDR_P3 = 0x%02X\r\n", TRX_RX_ADDR_P3);
-    uart_printf("TRX_RX_ADDR_P4 = 0x%02X\r\n", TRX_RX_ADDR_P4);
-    uart_printf("TRX_RX_ADDR_P5 = 0x%02X\r\n", TRX_RX_ADDR_P5);
-
-    uart_printf("TRX_TX_ADDR    = ");
-    //for(int i=0;i<5;i++) uart_printf("%02X ", (volatile uint32_t*)(&TRX_TX_ADDR_0)[i]);
-    uart_printf("\r\n");
-
-    uart_printf("TRX_RX_PW_P0   = 0x%02X\r\n", TRX_RX_PW_P0);
-    uart_printf("TRX_RX_PW_P1   = 0x%02X\r\n", TRX_RX_PW_P1);
-    uart_printf("TRX_RX_PW_P2   = 0x%02X\r\n", TRX_RX_PW_P2);
-    uart_printf("TRX_RX_PW_P3   = 0x%02X\r\n", TRX_RX_PW_P3);
-    uart_printf("TRX_RX_PW_P4   = 0x%02X\r\n", TRX_RX_PW_P4);
-    uart_printf("TRX_RX_PW_P5   = 0x%02X\r\n", TRX_RX_PW_P5);
-
-    uart_printf("TRX_DYNPD      = 0x%02X\r\n", TRX_DYNPD);
-    uart_printf("TRX_FEATURE    = 0x%02X\r\n", TRX_FEATURE);
-
-    uart_printf("addXVR_Reg0x24 = 0x%08lX\r\n", addXVR_Reg0x24);
-    uart_printf("addXVR_Reg0x3b = 0x%08lX\r\n", addXVR_Reg0x3b);
-    uart_printf("addXVR_Reg0x2e = 0x%08lX\r\n", addXVR_Reg0x2e);
-    uart_printf("addXVR_Reg0x26 = 0x%08lX\r\n", addXVR_Reg0x26);
-    uart_printf("addXVR_Reg0x2  = 0x%08lX\r\n", addXVR_Reg0x2);
-    uart_printf("addXVR_Reg0x2c = 0x%08lX\r\n", addXVR_Reg0x2c);
-    uart_printf("addXVR_Reg0x2d = 0x%08lX\r\n", addXVR_Reg0x2d);
-    uart_printf("addXVR_Reg0x3a = 0x%08lX\r\n", addXVR_Reg0x3a);
-}
 
 static void stack_integrity_check(void)
 {
@@ -151,6 +104,7 @@ void platform_reset(uint32_t error)
     cpu_reset();
 
 }
+
 #ifdef __AES_TEST__
 extern uint8_t aes_ok;
 extern uint8_t encrypted_data[16];
@@ -566,24 +520,17 @@ int main(void)
     uart_printf("Key Test Start...\r\n");
     RF_Handler_Init();//初始化RF句柄及队列
     
-    //set_power(0xf);
-    HAL_RF_SetTxPower(&hrf, 0xf);
-    //打印addXVR_Reg0x24，addXVR_Reg0x4
-    uart_printf("addXVR_Reg0x24=0x%08X, addXVR_Reg0x4=0x%08X\r\n", addXVR_Reg0x24, addXVR_Reg0x4);
-    //HAL_RF_SetRxMode(&hrf);
-
     #define is_host 1
-
     while(1) {
 
-        // while(1){
-        //     uint8_t dest_addr[5] = {0xA0, 0xA0, 0xA0, 0xA0, 0xA0};
-        //     uint8_t test_data[32] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14};
-        //     //发包测试 
-        //     RF_txQueue_Send(dest_addr,test_data, 8);
-        //     RF_Service_Handler(&hrf);
-        //     delay_ms(10);
-        // }
+        while(1){
+            uint8_t dest_addr[5] = {0xA0, 0xA0, 0xA0, 0xA0, 0xA0};
+            uint8_t test_data[32] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14};
+            //发包测试 
+            RF_txQueue_Send(dest_addr,test_data, 16);
+            RF_Service_Handler(&hrf);
+            delay_ms(10);
+        }
 
         static uint32_t last_scan_time = 0;
         if (Get_SysTick_ms() - last_scan_time >= 10) {
