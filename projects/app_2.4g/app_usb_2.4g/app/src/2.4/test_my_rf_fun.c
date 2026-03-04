@@ -5,7 +5,7 @@
 // #include <string.h>
 
 // #include "intc.h"            // interrupt controller
-// #include "uart.h"            // uart definitions
+// #include "my_drv_uart.h"            // uart definitions
 // #include "BK3633_Reglist.h"
 // #include "gpio.h"
 // #include "spi.h"

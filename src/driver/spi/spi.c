@@ -23,14 +23,13 @@
 #include "spi.h"       // uart definition
 #include "user_config.h"
 #include "icu.h" 
-#include "uart.h"
+#include "my_drv_uart.h"
 #include "drv_gpio.h"
 #include "dma.h"       
 #include "BK3633_RegList.h"
 #include "rf.h"
 
 spi_param_t    spi_param; 
-
 
 
 #if(SPI_DRIVER)

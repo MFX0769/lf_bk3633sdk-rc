@@ -4,9 +4,11 @@
 #include "bk3633_reglist.h"
 #include "user_config.h"
 
+
+
 uint8_t aes_ok=0;
 #define UART_PRINTF    uart_printf
-int uart_printf(const char *fmt,...);
+
 
 uint8_t encryp_data[16];
 

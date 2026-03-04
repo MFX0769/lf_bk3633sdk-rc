@@ -6,8 +6,10 @@
 #include <string.h> 
 #include "hal_drv_rf.h"
 #include "timer_handler.h"
+
+
+
 #define UART_PRINTF    uart_printf
-int uart_printf(const char *fmt,...);
 
 SYSTEM_STRUCT_DATA system_data;
 uint32_t RF_flag=0;

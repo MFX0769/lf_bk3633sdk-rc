@@ -4,11 +4,12 @@
 #include <stddef.h>        // standard definition
 #include "i2c.h"
 #include "BK_HCI_Protocol.h"
-#include "uart.h"
+#include "my_drv_uart.h"
 #include "BK3633_RegList.h"
 #include "icu.h"
 #include "drv_gpio.h"
 #include "user_config.h"
+
 
 
 #define NUMBER_ROUND_UP(a,b)        ((a) / (b) + (((a) % (b)) ? 1 : 0))

@@ -9,6 +9,8 @@
 #include "drv_gpio.h"
 
 
+
+
 uint8_t uart_rxQueue_buffer[UART2_FIFO_MAX_COUNT]; //UART2接收队列缓冲区
 uint8_t uart_txQueue_buffer[UART2_FIFO_MAX_COUNT]; //UART2发送队列缓冲区
 my_queue_t uart2_rxQueue; //UART2接收队列

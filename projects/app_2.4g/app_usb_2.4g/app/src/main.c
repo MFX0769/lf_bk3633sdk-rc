@@ -18,8 +18,8 @@
 #include <stdbool.h>   // boolean definition
 #include <string.h>   // boolean definition
 #include "intc.h"      // Interrupt initialization
-#include "uart.h"      // UART initialization
-#include "uart2.h"      // UART2 initialization
+#include "my_drv_uart.h"      // UART initialization
+#include "my_drv_uart2.h"      // UART2 initialization
 #include "flash.h"     // Flash initialization
 #include "app.h"       // application functions
 #include "reg_access.h"
@@ -27,14 +27,11 @@
 #include "dbg.h"
 #include "icu.h"
 #include "user_config.h"
-// #include "gpio.h"
 #include "drv_gpio.h"
-#include "icu.h"
 #include "wdt.h"
 #include "spi.h"
 #include "adc.h"
-#include "uart2.h"
-#include "my_drv_uart.h"
+
 
 #include "aon_rtc.h"
 #include "rf.h"
@@ -47,7 +44,6 @@
 #endif
 #include "Application_mode.h"
 #include "rf_handler.h"
-#include "my_drv_uart2.h"
 #include "driver_timer.h"
 #include "rf.h"
 #include "timer_handler.h"
@@ -59,14 +55,6 @@
 #include "app_key_scan.h"
 #include "rf_addr_mgr.h"
 
-// #ifdef uart_printf
-// #undef  uart_printf   
-// #endif
-
-// #define uart_printf     uart0_printf
-
-// #undef uart_printf
-// #define uart_printf uart0_printf
 
 extern void  xvr_reg_initial_24(void);
 uint8_t uart_rx_en;
@@ -81,11 +69,11 @@ static void printf_all_registers(void)
     uart_printf("TRX_RF_SETUP   = 0x%02X\r\n", TRX_RF_SETUP);
 
     uart_printf("TRX_RX_ADDR_P0 = ");
-    for(int i=0;i<5;i++) uart_printf("%02X ", (volatile uint32_t*)(&TRX_RX_ADDR_P0_0)[i]);
+    //for(int i=0;i<5;i++) uart_printf("%02X ", (volatile uint32_t*)(&TRX_RX_ADDR_P0_0)[i]);
     uart_printf("\r\n");
 
     uart_printf("TRX_RX_ADDR_P1 = ");
-    for(int i=0;i<5;i++) uart_printf("%02X ", (volatile uint32_t*)(&TRX_RX_ADDR_P1_0)[i]);
+    //for(int i=0;i<5;i++) uart_printf("%02X ", (volatile uint32_t*)(&TRX_RX_ADDR_P1_0)[i]);
     uart_printf("\r\n");
 
     uart_printf("TRX_RX_ADDR_P2 = 0x%02X\r\n", TRX_RX_ADDR_P2);
@@ -94,7 +82,7 @@ static void printf_all_registers(void)
     uart_printf("TRX_RX_ADDR_P5 = 0x%02X\r\n", TRX_RX_ADDR_P5);
 
     uart_printf("TRX_TX_ADDR    = ");
-    for(int i=0;i<5;i++) uart_printf("%02X ", (volatile uint32_t*)(&TRX_TX_ADDR_0)[i]);
+    //for(int i=0;i<5;i++) uart_printf("%02X ", (volatile uint32_t*)(&TRX_TX_ADDR_0)[i]);
     uart_printf("\r\n");
 
     uart_printf("TRX_RX_PW_P0   = 0x%02X\r\n", TRX_RX_PW_P0);
@@ -323,9 +311,9 @@ void app_key_event_handler(key_id_t id, key_event_t event)
             if (right_cnt >= 5) {
                 //翻转pair_flag
                 pair_flag=!pair_flag;
-                if(pair_flag)
+                //if(pair_flag)
                     uart_printf("Enter Pairing\r\n");
-                else
+                //else
                     uart_printf("Exit Pairing\r\n");
 
                 right_cnt = 0;
@@ -334,48 +322,49 @@ void app_key_event_handler(key_id_t id, key_event_t event)
     }
 }
 
+
 int main(void)
 {
     
+    icu_init(); //不能用串口打印，还没初始化
 
-    icu_init();
     //wdt_disable();
-    intc_init();
+    intc_init(); //不能用串口打印，还没初始化！
     
     #if(UART_PRINTF_ENABLE)
         #if(!USB_DRIVER)
-        uart_init(115200);
         #endif
-    uart_init(115200);
-    uart2_init(115200);//
-    #endif
-    uart0_printf("main start uart0~~~~~\r\n");
-    uart2_printf("main start2~~~~~\r\n");
-    uart0_printf("main start uart0~~~~~\r\n");
-    uart_printf("main start uart1~~~~~\r\n");
 
-    
+        uart2_init(115200);
+        uart_init(115200);
+    #endif
+    uart_printf("init uarts\r\n");
+
     flash_init();
+    uart_printf("init flash\r\n");
+
     rf_addr_mgr_init();
-  //  xvr_reg_initial_24();
-  //  gpio_set_neg(0x04);
+    uart_printf("init rf_addr_mgr\r\n");
 
     xvr_reg_initial();
     #ifdef __USB_TEST__
     mcu_clk_switch(MCU_CLK_64M);
     #else
     mcu_clk_switch(MCU_CLK_16M);
+    uart_printf("select MCU_CLK_16M\r\n");
     #endif   
     #if(AON_RTC_DRIVER)
     aon_rtc_init();
+    uart_printf("init aon_rtc\r\n");
     #endif
     #if(SPI_DRIVER)
     spi_init(0,0,0);
+    uart_printf("init spi\r\n");
     #endif
-
 
     #if(ADC_DRIVER)
     adc_init(1,1);
+    uart_printf("init adc\r\n");
     #endif
     #if(USB_DRIVER)
     usb_init(usb_mod_enable,usb_mod_ie_enable);
@@ -383,11 +372,12 @@ int main(void)
     AplUsb_SetTxCbk(USB_ENDPID_Audio_MIC,(void*)MicIn_cbk);
     AplUsb_SetRxCbk(USB_ENDPID_Audio_SPK, (void*)AudioOut_Cbk);
     AplUsb_SetRxCbk(USB_ENDPID_Hid_MSE_OUT, (void*)Hid_RxCbk);
+    uart_printf("init usb\r\n");
     #endif
     
     GLOBAL_INT_START();
- 
-    uart_printf("main start~~~~~\r\n");
+    uart_printf("GLOBAL_INT_START\r\n");
+
     #ifdef __USB_TEST__
     uint8_t ms_buf[16];
     // send media key ,no id,the another endpoint
@@ -563,6 +553,7 @@ int main(void)
 
     //定时器初始化(依赖xvr里初始化rc32k时钟，放在xvr初始化后面)
     Timer_Handler_Init();
+    uart_printf("Timer_Handler_Init done\r\n");
 
     /*----------------------------测试按键功能--------------------------------------*/
      const key_config_t my_keys[] = {
@@ -626,7 +617,6 @@ int main(void)
     //    }
     // }
     
-
 
     // uart_printf("e:%d\r\n",Get_SysTick_ms());
     // // cpu延时等串口寄存器发完

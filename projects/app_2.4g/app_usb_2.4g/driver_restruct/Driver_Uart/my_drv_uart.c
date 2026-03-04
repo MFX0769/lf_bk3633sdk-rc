@@ -24,6 +24,8 @@
 #include "user_config.h"
 #include "dma.h"
 
+
+
 // 缓冲区定义
 uint8_t uart0_rxQueue_buffer[UART_FIFO_MAX_COUNT]; 
 uint8_t uart0_txQueue_buffer[UART_FIFO_MAX_COUNT]; 

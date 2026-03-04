@@ -21,6 +21,8 @@
 #include "intc.h"
 #include "reg_intc.h"
 
+
+
 #if(AON_RTC_DRIVER)
 
 #ifndef USE_FREERTOS

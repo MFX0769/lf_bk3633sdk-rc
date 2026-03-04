@@ -1,5 +1,5 @@
 #include "intc.h"            // interrupt controller
-#include "uart.h"            // uart definitions
+#include "my_drv_uart.h"            // uart definitions
 #include "BK3633_Reglist.h"
 // #include "gpio.h"
 #include "drv_gpio.h"
@@ -14,23 +14,15 @@
 #include "test_my_rf_fun.h"
 #include "rf_handler.h"
 
-// #ifdef uart_printf
-// #undef  uart_printf   
-// #endif
-
-// #define uart_printf     uart0_printf
-
-// #undef uart_printf
-// #define uart_printf uart0_printf
 
 #if(ADC_DRIVER)
 #include "adc.h"
 #endif
 #if(UART_DRIVER)
-#include "uart.h"
+#include "my_drv_uart.h"
 #endif
 #if(UART2_DRIVER)
-#include "uart2.h"
+#include "my_drv_uart2.h"
 #endif
 #if(AON_RTC_DRIVER)
 #include "aon_rtc.h"
@@ -95,7 +87,6 @@ void intc_init(void)
   setf_SYS_Reg0x10_int_aon_rtc_en; //使能aon rtc系统级中断
   clrf_SYS_Reg0x11_int_aon_rtc_pri; //aon rtc系统级中断设为irq
 
-  uart_printf("intc_init  bk24\r\n");
 }
 
 

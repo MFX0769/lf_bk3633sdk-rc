@@ -4,6 +4,8 @@
 #include "user_config.h"
 #include "wdt.h"
 
+
+
 void wdt_disable(void)
 {
     WDT_REG0X2=0x00;//close WDT
@@ -11,7 +13,7 @@ void wdt_disable(void)
     WDT_REG0X1=WDKEY_ENABLE2;
 }
 
-//Ã¿¸öµ¥Î»31.25us£¬×î´ó0xffffff£¬Ô¼524s
+//Ã¿ï¿½ï¿½ï¿½ï¿½Î»31.25usï¿½ï¿½ï¿½ï¿½ï¿½0xffffffï¿½ï¿½Ô¼524s
 void wdt_enable(uint32_t wdt_cnt)
 {
     WDT_REG0X1=0x00;

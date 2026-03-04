@@ -1,7 +1,7 @@
 #include "app_addr_manage.h"
 #include "bk3633_reglist.h"
 #include "flash.h"
-#include "uart.h"
+#include "my_drv_uart.h"
 #include "hal_drv_rf.h"
 #include <string.h>
 #include <stdlib.h> // for rand()

@@ -13,6 +13,8 @@ volatile eRC_TIMER_DUTY eTimerDuty;
 volatile uint8_t uTimer2msCnt;
 #endif
 
+
+
 void app_mouse_wheel_scan(void)
 {
     static uint8_t old_pinLevel = 0;

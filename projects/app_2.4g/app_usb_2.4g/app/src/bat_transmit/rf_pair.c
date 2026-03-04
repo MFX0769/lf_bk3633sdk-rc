@@ -7,7 +7,7 @@
 #include "bk3633_reglist.h"
 #include "driver_timer.h"
 #include <string.h>
-#include "uart.h"
+#include "my_drv_uart.h"
 #include "addr_pool.h"
 #include "flash.h"
 #include "bk3633_reglist.h"
@@ -17,8 +17,6 @@
 #include "ll.h"
 #include "wdt.h"
 #include "rwprf_config.h"
-
-#include "app_addr_manage.h"
 
 
 

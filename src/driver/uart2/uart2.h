@@ -16,7 +16,7 @@
 
 #include <stdbool.h>          // standard boolean definitions
 #include <stdint.h>           // standard integer functions
-#include "uart.h"
+#include "my_drv_uart.h"
 
 #define BASEADDR_UART2                                      0x00806a00
 //addUART2_Reg0x0

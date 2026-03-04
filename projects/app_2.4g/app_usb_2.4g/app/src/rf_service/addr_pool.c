@@ -3,6 +3,8 @@
 #include "addr_pool.h"
 
 
+
+
 //初始化地址池，传入保留ID列表
 void __addrpool_init_internal(SingleByteAddrPool_t *pool, uint8_t *list, uint16_t count)
 {

@@ -3,6 +3,7 @@
 #include "user_config.h"
 
 
+
 uint8_t checksum8(const uint8_t *data, uint8_t length)
 {
     uint8_t sum = 0;

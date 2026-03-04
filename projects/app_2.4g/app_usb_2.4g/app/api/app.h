@@ -2,8 +2,8 @@
 #define _APP_H__
 
 #include "define_system.h"
-#include "uart2.h"
-#include "uart.h"
+#include "my_drv_uart2.h"
+#include "my_drv_uart.h"
 
 
 extern void Delay_ms(int num);

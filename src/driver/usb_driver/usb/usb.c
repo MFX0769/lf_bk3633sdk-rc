@@ -27,6 +27,8 @@
 #include "ke_mem.h"
 #endif
  
+
+
 #ifdef _BK3633_
 extern void*ke_malloc(int size, uint8 type);
 extern void ke_free(void * mem_ptr);

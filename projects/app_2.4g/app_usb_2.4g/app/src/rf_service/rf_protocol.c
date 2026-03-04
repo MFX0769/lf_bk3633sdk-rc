@@ -1,6 +1,10 @@
 #include "rf_protocol.h"
 #include <string.h>
 
+
+
+
+
 // CRC16 Modbus计算（假设已有实现，如果没有需要添加）
 extern uint16_t crc16_modbus(uint8_t *data, uint16_t len);
 

@@ -7,7 +7,7 @@
 #include "bk3633_reglist.h"
 #include "driver_timer.h"
 #include <string.h>
-#include "uart.h"
+#include "my_drv_uart.h"
 #include "addr_pool.h"
 #include "flash.h"
 #include "bk3633_reglist.h"
@@ -35,11 +35,11 @@ static void printf_all_registers(void)
     uart_printf("TRX_RF_SETUP   = 0x%02X\r\n", TRX_RF_SETUP);
 
     uart_printf("TRX_RX_ADDR_P0 = ");
-    for(int i=0;i<5;i++) uart_printf("%02X ", (volatile uint32_t*)(&TRX_RX_ADDR_P0_0)[i]);
+    //for(int i=0;i<5;i++) uart_printf("%02X ", (volatile uint32_t*)(&TRX_RX_ADDR_P0_0)[i]);
     uart_printf("\r\n");
 
     uart_printf("TRX_RX_ADDR_P1 = ");
-    for(int i=0;i<5;i++) uart_printf("%02X ", (volatile uint32_t*)(&TRX_RX_ADDR_P1_0)[i]);
+    //for(int i=0;i<5;i++) uart_printf("%02X ", (volatile uint32_t*)(&TRX_RX_ADDR_P1_0)[i]);
     uart_printf("\r\n");
 
     uart_printf("TRX_RX_ADDR_P2 = 0x%02X\r\n", TRX_RX_ADDR_P2);
@@ -48,7 +48,7 @@ static void printf_all_registers(void)
     uart_printf("TRX_RX_ADDR_P5 = 0x%02X\r\n", TRX_RX_ADDR_P5);
 
     uart_printf("TRX_TX_ADDR    = ");
-    for(int i=0;i<5;i++) uart_printf("%02X ", (volatile uint32_t*)(&TRX_TX_ADDR_0)[i]);
+    //for(int i=0;i<5;i++) uart_printf("%02X ", (volatile uint32_t*)(&TRX_TX_ADDR_0)[i]);
     uart_printf("\r\n");
 
     uart_printf("TRX_RX_PW_P0   = 0x%02X\r\n", TRX_RX_PW_P0);
@@ -75,9 +75,9 @@ static void printf_all_registers(void)
 static void printf_txrx_addr(void)
 {
     uart_printf("RX_ADDR: ");
-    for(int i=0;i<5;i++) uart_printf("%02X ", (volatile uint32_t*)(&TRX_RX_ADDR_P0_0)[i]);
+    //for(int i=0;i<5;i++) uart_printf("%02X ", (volatile uint32_t*)(&TRX_RX_ADDR_P0_0)[i]);
     uart_printf(" | TX_ADDR: ");
-    for(int i=0;i<5;i++) uart_printf("%02X ", (volatile uint32_t*)(&TRX_TX_ADDR_0)[i]);
+   // for(int i=0;i<5;i++) uart_printf("%02X ", (volatile uint32_t*)(&TRX_TX_ADDR_0)[i]);
     uart_printf("\r\n");
 }
 
@@ -358,13 +358,13 @@ void Host_Pairing_Task(uint8_t* flag) {
                     g_host_ctrl.resp_pkt.cmd = CMD_PAIR_RESP;
                     memcpy(g_host_ctrl.resp_pkt.new_addr, new_addr, 5);
 
-                    uart_printf("Host: Assigned Pipe %d Addr: %02X %02X %02X %02X %02X\n",
-                                target_pipe,
-                                g_host_ctrl.resp_pkt.new_addr[0],
-                                g_host_ctrl.resp_pkt.new_addr[1],
-                                g_host_ctrl.resp_pkt.new_addr[2],
-                                g_host_ctrl.resp_pkt.new_addr[3],
-                                g_host_ctrl.resp_pkt.new_addr[4]);
+                    // uart_printf("Host: Assigned Pipe %d Addr: %02X %02X %02X %02X %02X\n",
+                    //             target_pipe,
+                    //             g_host_ctrl.resp_pkt.new_addr[0],
+                    //             g_host_ctrl.resp_pkt.new_addr[1],
+                    //             g_host_ctrl.resp_pkt.new_addr[2],
+                    //             g_host_ctrl.resp_pkt.new_addr[3],
+                    //             g_host_ctrl.resp_pkt.new_addr[4]);
 
                     //准备连发
                     g_host_ctrl.state = HOST_PAIR_SEND_RESP;
