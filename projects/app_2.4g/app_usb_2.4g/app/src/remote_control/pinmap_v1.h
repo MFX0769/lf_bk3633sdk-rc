@@ -32,11 +32,11 @@
  * 支持：OLED/TFT小屏幕，如SSD1306, ST7735, ST7789等
  * ============================================================================ */
 /* 新板子 */
-#define LCD_SPI_SCK     Port_Pin(0, 4)  // P04 - SPI时钟
-#define LCD_SPI_MOSI    Port_Pin(0, 5)  // P05 - SPI主机输出
-#define LCD_SPI_CS      Port_Pin(0, 6)  // P06 - SPI片选(NSS)
-#define LCD_DCX         Port_Pin(0, 7)  // P07 - 数据/命令选择
-#define LCD_RST         Port_Pin(0, 3)  // P03 - LCD复位引脚
+// #define LCD_SPI_SCK     Port_Pin(0, 4)  // P04 - SPI时钟
+// #define LCD_SPI_MOSI    Port_Pin(0, 5)  // P05 - SPI主机输出
+// #define LCD_SPI_CS      Port_Pin(0, 6)  // P06 - SPI片选(NSS)
+// #define LCD_DCX         Port_Pin(0, 7)  // P07 - 数据/命令选择
+// #define LCD_RST         Port_Pin(0, 3)  // P03 - LCD复位引脚
 
 //旧板子
 #define LCD_SPI_SCK     Port_Pin(0, 4)  // P04 - SPI时钟

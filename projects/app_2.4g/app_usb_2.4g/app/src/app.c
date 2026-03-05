@@ -3,6 +3,8 @@
 #include "drv_gpio.h"
 #include "wdt.h"
 #include "driver_timer.h"
+#include "datatypes.h"
+
 extern SYSTEM_STRUCT_DATA system_data;
 extern uint32 RF_flag;
 
@@ -12,6 +14,10 @@ volatile uint8_t uRF_TXTime;
 volatile eRC_TIMER_DUTY eTimerDuty;
 volatile uint8_t uTimer2msCnt;
 #endif
+
+// LCD 显示相关的桩变量（用于编译通过，后续根据需求实现具体逻辑）
+volatile control_model_state model_state = CTL_MODEL_STOP;
+volatile bool cruise_on = false;
 
 
 
