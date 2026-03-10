@@ -60,6 +60,8 @@
 #include "lcd_init.h"
 #include "lcd_kmg.h"
 
+#include "hall_sensor.h"
+
 extern void  xvr_reg_initial_24(void);
 
 static void stack_integrity_check(void)
@@ -453,6 +455,49 @@ void app_key_event_handler(key_id_t id, key_event_t event)
 }
 
 
+void hall_test_example(void)
+{
+    static hall_sensor_t hall;
+    static uint16_t filter_buf[8];
+
+    // 硬件配置
+    hall_hw_config_t hw_config = {
+        .adc_channel = 2,
+        .en_ctrl = {
+            .gpio = Port_Pin(1, 2),
+            .active_level = 0,
+        },
+        .power_ctrl = {
+            .gpio = Port_Pin(1, 0),
+            .active_level = 1,
+        },
+    };
+
+    // 自定义映射配置
+    hall_map_config_t map_config = {
+      .adc_min = 96,              // 实测最小值
+      .adc_max = 919,             // 实测最大值
+      .deadzone_low = 10,         // 下限死区：容忍90→98的漂移
+      .deadzone_high = 10,        // 上限死区：容忍919→905的漂移
+      .throttle_min = 0,
+      .throttle_max = 100,
+      .map_type = HALL_MAP_EXPONENTIAL,
+      .reverse = true,           // 不反向
+  };
+
+    // 初始化时传入映射配置
+    hall_sensor_init(&hall, &hw_config, &map_config, filter_buf, 8);
+
+    // 读取油门值
+    while(1){
+        uint16_t hall_raw=hall_sensor_read_raw(&hall);
+        uint16_t throttle = hall_sensor_read_throttle(&hall);
+        uart_printf("Raw: %d, Throttle: %d%%\r\n", hall_raw, throttle);
+    }
+    
+}
+
+#if 1
 int main(void)
 {
     
@@ -470,36 +515,38 @@ int main(void)
     #endif
     uart_printf("init uarts\r\n");
 
-    flash_init();
-    uart_printf("init flash\r\n");
-
-    rf_addr_mgr_init();
-    uart_printf("init rf_addr_mgr\r\n");
-
     xvr_reg_initial();
     //定时器初始化(依赖xvr里初始化rc32k时钟，放在xvr初始化后面)
     Timer_Handler_Init(); //放在靠前的位置先初始化，其他模块有用到定时器的功能
-    uart_printf("Timer_Handler_Init done\r\n");
+    uart_printf("Timer_Handler_Init done:%d\r\n", Get_SysTick_ms());
+
+    flash_init();
+    uart_printf("init flash:%d\r\n", Get_SysTick_ms());
+
+    rf_addr_mgr_init();
+    uart_printf("init rf_addr_mgr:%d\r\n", Get_SysTick_ms());
+
+    
     
     #ifdef __USB_TEST__
     mcu_clk_switch(MCU_CLK_64M);
     #else
     mcu_clk_switch(MCU_CLK_16M);
-    uart_printf("select MCU_CLK_16M\r\n");
+    uart_printf("select MCU_CLK_16M:%d\r\n", Get_SysTick_ms());
     #endif   
     #if(AON_RTC_DRIVER)
     aon_rtc_init();
-    uart_printf("init aon_rtc\r\n");
+    uart_printf("init aon_rtc:%d\r\n", Get_SysTick_ms());
     #endif
 
     #if(SPI_DRIVER)
     spi_init(0,0,0);
-    uart_printf("init spi\r\n");
+    uart_printf("init spi:%d\r\n", Get_SysTick_ms());
     #endif
 
     #if(ADC_DRIVER)
-    adc_init(1,1);
-    uart_printf("init adc\r\n");
+    //adc_init(2,1);
+    //uart_printf("init adc:%d\r\n", Get_SysTick_ms());
     #endif
 
     #if(USB_DRIVER)
@@ -512,13 +559,14 @@ int main(void)
     #endif
     
     GLOBAL_INT_START();
-    uart_printf("GLOBAL_INT_START\r\n");
+    uart_printf("GLOBAL_INT_START:%d\r\n", Get_SysTick_ms());
 
     
     USB_Test();
     AES_Test();
 
-     #if(ENABLE_LED_DISPLAY)
+
+    #if(ENABLE_LED_DISPLAY)
     uart_printf("init lcd display\r\n");
     OLED_Init(); //初始化
     uart_printf("init lcd end\r\n");
@@ -527,6 +575,16 @@ int main(void)
     LCD_ShowString_Hor(10, 10, "OK!", WHITE, BLACK, 16);  // 测试
     uart_printf("show string\r\n");
     #endif
+
+    //hall_test_example();
+
+    // hall_init();
+    // while(1){
+    //     uint16_t hall_value;
+    //     hall_value=hall_read_raw();
+    //     uart_printf("hall: %d\r\n", hall_value);
+    //     delay_ms(100);
+    // }
 
     
     
@@ -931,9 +989,50 @@ int main(void)
         stack_integrity_check();
     }
 }
+#else
 
+static void Delay_ms(int num) //sync from svn revision 18
+{
+    int x, y;
+    for(y = 0; y < num; y ++ )
+    {
+        for(x = 0; x < 3260; x++);
+    }
 
+}
+  int main(void)
+  {
+      icu_init();
+      intc_init();
 
+      uart_init(115200);
+      uart_printf("ADC Test Start\r\n");
+
+      xvr_reg_initial();
+      Timer_Handler_Init();
+
+      // 关键：使用 64MHz
+      mcu_clk_switch(MCU_CLK_16M);
+      uart_printf("MCU Clock: 16MHz\r\n");
+
+      GLOBAL_INT_START();
+
+      hall_init();
+      while(1) {
+        //   uint16_t hall_value;
+        //   uint16_t hall_value_filter;
+        //   hall_value = hall_read_raw();
+        //   hall_value_filter = hall_update_filter(hall_value);
+        //   uart_printf("Hall: %d, Filtered: %d\r\n", hall_value, hall_value_filter);
+        //   Delay_ms(100);
+        uint32_t in_time=Get_SysTick_ms();
+        //uart_printf("now_time: %d\r\n", in_time);
+        Delay_ms(1000); //cpu阻塞延时
+        uart_printf("%d\r\n", Get_SysTick_ms()-in_time);
+      }
+  }
+
+#endif
 
 
 

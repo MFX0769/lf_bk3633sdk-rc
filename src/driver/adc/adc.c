@@ -7,6 +7,7 @@
 #include "adc.h"
 #include "icu.h"
 #include "BK3633_RegList.h"
+#include "user_config.h"
 
 
 
@@ -75,8 +76,8 @@ void adc_isr(void)
     SADC_REG0X0_CFG0 |= (0x01 << POS_SADC_REG0X0_CFG0_INT_CLEAR);
     
     adc_flag=1;    
-  //  if((SADC_REG0X0_CFG0&0x03)==0x03)
-   //     uart_printf("adc_value=%x\r\n",SADC_REG0X4_DAT);
+    // if((SADC_REG0X0_CFG0&0x03)==0x03)
+    //     uart_printf("adc_value=%x\r\n",SADC_REG0X4_DAT);
     
 }
 
@@ -105,10 +106,9 @@ uint16_t adc_get_value(uint8_t channel,uint8_t mode)
     } 
     if(adc_flag==1)
     {
-        g_adc_value=SADC_REG0X4_DAT>>2;
-
-     //   uart_printf("g_adc_value=%x,channel=%x\r\n",g_adc_value,channel);
-
+        //g_adc_value=SADC_REG0X4_DAT>>2;
+        g_adc_value=SADC_REG0X4_DAT;
+        //uart_printf("g_adc_value=%x,channel=%x\r\n",g_adc_value,channel);
     }
 
     SADC_REG0X0_CFG0 &= ~(SET_ADC_EN+(0x03 << POS_SADC_REG0X0_CFG0_MODE )+(0x0f << POS_SADC_REG0X0_CFG0_CHNL)); //ADC值读取完成后必须把使能位清除       

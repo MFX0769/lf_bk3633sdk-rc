@@ -11,7 +11,8 @@
       "Bash(xmllint:*)",
       "Bash(tr ;:*)",
       "Bash(sed:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(pdftotext:*)"
     ]
   }
 }
