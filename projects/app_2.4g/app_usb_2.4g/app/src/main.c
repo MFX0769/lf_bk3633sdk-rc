@@ -26,6 +26,8 @@
 #include "boot.h"
 #include "dbg.h"
 #include "icu.h"
+#include "remote_control/app/rc_scheduler.h"
+#include "remote_control/device/hall/hall_sensor.h"
 #include "user_config.h"
 #include "drv_gpio.h"
 #include "wdt.h"
@@ -454,46 +456,60 @@ void app_key_event_handler(key_id_t id, key_event_t event)
     }
 }
 
-
 void hall_test_example(void)
 {
-    static hall_sensor_t hall;
-    static uint16_t filter_buf[8];
-
-    // 硬件配置
-    hall_hw_config_t hw_config = {
-        .adc_channel = 2,
+    hall_sensor_t hall;
+    uint16_t filter_buf[8] = {0};
+    
+   hall_hw_config_t hw_config = {
+        .adc_channel = 1,
         .en_ctrl = {
-            .gpio = Port_Pin(1, 2),
+            .gpio = Port_Pin(1,0),
             .active_level = 0,
         },
         .power_ctrl = {
-            .gpio = Port_Pin(1, 0),
-            .active_level = 1,
+            .gpio = Port_Pin(1,0),
+            .active_level = 0,
         },
     };
 
-    // 自定义映射配置
     hall_map_config_t map_config = {
-      .adc_min = 96,              // 实测最小值
-      .adc_max = 919,             // 实测最大值
-      .deadzone_low = 10,         // 下限死区：容忍90→98的漂移
-      .deadzone_high = 10,        // 上限死区：容忍919→905的漂移
-      .throttle_min = 0,
-      .throttle_max = 100,
-      .map_type = HALL_MAP_EXPONENTIAL,
-      .reverse = true,           // 不反向
-  };
+        .adc_min = 96,
+        .adc_max = 919,
+        .deadzone_low = 10,
+        .deadzone_high = 10,
+        .throttle_min = 0,
+        .throttle_max = 100,
+        .map_type = HALL_MAP_LINEAR,
+        .reverse = true,
+    };
 
-    // 初始化时传入映射配置
-    hall_sensor_init(&hall, &hw_config, &map_config, filter_buf, 8);
+    hall_sensor_init(&hall, &hw_config, &map_config, filter_buf, sizeof(filter_buf));
+    uart_printf("app_throttle_init done\r\n");
+    uint16_t throttle_value = 0,flag=0;
+    delay_ms(100);
 
-    // 读取油门值
     while(1){
-        uint16_t hall_raw=hall_sensor_read_raw(&hall);
-        uint16_t throttle = hall_sensor_read_throttle(&hall);
-        uart_printf("Raw: %d, Throttle: %d%%\r\n", hall_raw, throttle);
+        //app_throttle_update(&throttle_value, &flag);
+        //throttle_value=hall_sensor_read_throttle(&hall);
+          throttle_value=hall_sensor_read_raw(&hall);
+
+          uart_printf("Throttle Value: %d, Changed: %d\r\n", throttle_value, flag);
+          delay_ms(5);
+        // hall_sensor_disable(&hall);
+        // delay_ms(1000);
+        // hall_sensor_enable(&hall);
+        // delay_ms(1000);
+        //delay_ms(100);
+        // uart_printf(":gpio=%d,level=%d\r\n",hall.hw.power_ctrl.gpio, hall.hw.power_ctrl.active_level);
+        // hall_hw_disable(&(hall.hw));
+        // gpio_set(Port_Pin(1,0), 1);
+        // uart_printf("gpio+set:gpio=%d,level=%d\r\n", Port_Pin(1,0), 1);
+
+        // delay_ms(100);
+        // //hall_hw_enable(&hall.hw);
     }
+    
     
 }
 
@@ -576,7 +592,7 @@ int main(void)
     uart_printf("show string\r\n");
     #endif
 
-    //hall_test_example();
+    hall_test_example();
 
     // hall_init();
     // while(1){
@@ -587,15 +603,16 @@ int main(void)
     // }
 
     
-    
-
+    RC_Scheduler_t sched;
+    RC_Scheduler_Init(&sched);
+    RC_Scheduler_Task(&sched);
     /*----------------------------测试按键功能--------------------------------------*/
      const key_config_t my_keys[] = {
         {KEY_ID_LEFT,   Port_Pin(0, 2), 2000, false}, // Left Key: 3s Long Press
         {KEY_ID_RIGHT,  Port_Pin(3, 1), 1000, false}, // Right Key: Default 1s
     };
-    app_key_init(my_keys, sizeof(my_keys)/sizeof(key_config_t));
-    app_key_register_callback(app_key_event_handler);
+    key_init(my_keys, sizeof(my_keys)/sizeof(key_config_t));
+    key_register_callback(app_key_event_handler);
     
     uart_printf("Key Test Start...\r\n");
     RF_Handler_Init();//初始化RF句柄及队列
@@ -615,7 +632,7 @@ int main(void)
         static uint32_t last_scan_time = 0;
         if (Get_SysTick_ms() - last_scan_time >= 10) {
             last_scan_time = Get_SysTick_ms();
-            app_key_scan(10);
+            key_scan(10);
 
             #if is_host
             Host_Pairing_Task(&pair_flag);

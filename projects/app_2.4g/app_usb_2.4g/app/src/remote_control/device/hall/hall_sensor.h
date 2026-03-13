@@ -35,11 +35,10 @@ typedef struct {
  * @brief 滤波器配置
  */
 typedef struct {
-    uint8_t  window_size;         // 滑动窗口大小（必须是2的幂次）
-    uint8_t  window_size_shift_2; // 窗口大小为2的window_size_shift_2次方; 这个变量不用填，会在内部算
+    uint8_t  window_size;         // 滑动窗口大小
     uint16_t *window_buf;         // 窗口缓冲区指针
     uint8_t  window_index;        // 当前窗口索引
-    uint32_t window_sum;        // 窗口累加和
+    uint32_t window_sum;          // 窗口累加和
 } hall_filter_t;
 
 /**
@@ -102,6 +101,10 @@ uint16_t hall_hw_read_adc(const hall_hw_config_t *config);
 
 /**
  * @brief 初始化滤波器（内部使用）
+ * @param filter 滤波器对象指针
+ * @param buf 滤波缓冲区（uint16_t数组）
+ * @param size 缓冲区大小（元素个数，非字节数）
+ * @note 滤波器使用滑动窗口平均算法，窗口大小即为size
  */
 void hall_filter_init(hall_filter_t *filter, uint16_t *buf, uint8_t size);
 
@@ -112,6 +115,10 @@ void hall_filter_reset(hall_filter_t *filter);
 
 /**
  * @brief 更新滤波器（内部使用）
+ * @param filter 滤波器对象指针
+ * @param raw_value 新的原始ADC值
+ * @return 滤波后的平均值
+ * @note 使用滑动窗口平均算法，返回窗口内所有值的算术平均值
  */
 uint16_t hall_filter_update(hall_filter_t *filter, uint16_t raw_value);
 
@@ -133,12 +140,13 @@ uint16_t hall_map_adc_to_throttle(const hall_map_config_t *map, uint16_t adc_val
  * @param sensor 传感器对象指针
  * @param hw_config 硬件配置
  * @param map_config 映射配置（传NULL使用默认配置）
- * @param filter_buf 滤波器缓冲区
- * @param filter_size 滤波器窗口大小
+ * @param filter_buf 滤波器缓冲区（uint16_t数组）
+ * @param filter_size 滤波器窗口大小（元素个数，建议4-16）
+ * @note filter_size表示滑动窗口的大小，值越大滤波效果越平滑但响应越慢
  */
 void hall_sensor_init(hall_sensor_t *sensor,
-                      const hall_hw_config_t *hw_config,
-                      const hall_map_config_t *map_config,
+                       hall_hw_config_t *hw_config,
+                       hall_map_config_t *map_config,
                       uint16_t *filter_buf,
                       uint8_t filter_size);
 

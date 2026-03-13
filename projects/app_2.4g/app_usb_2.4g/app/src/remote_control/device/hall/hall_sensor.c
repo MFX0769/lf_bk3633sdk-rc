@@ -33,8 +33,8 @@ void hall_hw_init(const hall_hw_config_t *config)
     gpio_config(config->en_ctrl.gpio, GPIO_OUTPUT, GPIO_PULL_NONE);
     gpio_config(config->power_ctrl.gpio, GPIO_OUTPUT, GPIO_PULL_NONE);
 
-    // 初始状态：失能、上电
-    gpio_set(config->en_ctrl.gpio, !config->en_ctrl.active_level);      // 失能（非有效电平）
+    // 初始状态：使能、上电
+    //gpio_set(config->en_ctrl.gpio, config->en_ctrl.active_level);      // 使能（有效电平）
     gpio_set(config->power_ctrl.gpio, config->power_ctrl.active_level); // 上电（有效电平）
 
     // 初始化ADC
@@ -43,13 +43,16 @@ void hall_hw_init(const hall_hw_config_t *config)
 
 void hall_hw_enable(const hall_hw_config_t *config)
 {
-    gpio_set(config->en_ctrl.gpio, config->en_ctrl.active_level);  // 使能（有效电平）
+    //gpio_set(config->en_ctrl.gpio, config->en_ctrl.active_level);  // 使能（有效电平）
+    gpio_set(config->power_ctrl.gpio, config->power_ctrl.active_level);
     delay_us(5);
 }
 
 void hall_hw_disable(const hall_hw_config_t *config)
 {
-    gpio_set(config->en_ctrl.gpio, !config->en_ctrl.active_level);  // 失能（非有效电平）
+    //gpio_set(config->en_ctrl.gpio, !config->en_ctrl.active_level);  // 失能（非有效电平）
+    gpio_set(config->power_ctrl.gpio, !config->power_ctrl.active_level);
+    //uart_printf("hall_hw_disable:gpio=%d,level=%d\r\n", config->power_ctrl.gpio, !config->power_ctrl.active_level);
     delay_us(5);
 }
 
@@ -82,47 +85,16 @@ uint16_t hall_hw_read_adc(const hall_hw_config_t *config)
 
 void hall_filter_init(hall_filter_t *filter, uint16_t *buf, uint8_t size)
 {
-    //取整到最接近的2的幂次
     if (size == 0) size = 1;  // 最小为1
     if (size > 128) size = 128;  // 最大为128
 
-    // 找到最接近的2的幂次
-    uint8_t lower = 1;
-    uint8_t upper = 1;
-
-    // 找到小于等于size的最大2的幂次
-    while (lower * 2 <= size) {
-        lower *= 2;
-    }
-
-    // 找到大于size的最小2的幂次
-    upper = lower * 2;
-    if (upper > 128) upper = 128;
-
-    // 选择更接近的那个
-    uint8_t power_of_2;
-    if (size - lower < upper - size) {
-        power_of_2 = lower;
-    } else {
-        power_of_2 = upper;
-    }
-
-    // 计算位移位数（log2(power_of_2)）
-    uint8_t shift = 0;
-    uint8_t temp = power_of_2;
-    while (temp > 1) {
-        temp >>= 1;
-        shift++;
-    }
-
     filter->window_buf = buf;
-    filter->window_size = power_of_2;
-    filter->window_size_shift_2 = shift;  // 保存位移位数
+    filter->window_size = size;
     filter->window_index = 0;
     filter->window_sum = 0;
 
     // 清空缓冲区
-    memset(buf, 0, power_of_2 * sizeof(uint16_t));
+    memset(buf, 0, size * sizeof(uint16_t));
 }
 
 void hall_filter_reset(hall_filter_t *filter)
@@ -144,8 +116,8 @@ uint16_t hall_filter_update(hall_filter_t *filter, uint16_t raw_value)
     filter->window_buf[filter->window_index] = raw_value;
     filter->window_index = (filter->window_index + 1) % filter->window_size;
 
-    // 返回平均值（使用预计算的位移位数）
-    return (uint16_t)(filter->window_sum >> filter->window_size_shift_2);
+    // 返回平均值（使用除法）
+    return (uint16_t)(filter->window_sum / filter->window_size);
 }
 
 // ============================================================================
@@ -324,29 +296,40 @@ uint16_t hall_map_adc_to_throttle(const hall_map_config_t *map, uint16_t adc_val
 // ============================================================================
 
 void hall_sensor_init(hall_sensor_t *sensor,
-                      const hall_hw_config_t *hw_config,
-                      const hall_map_config_t *map_config,
+                       hall_hw_config_t *hw_config,
+                       hall_map_config_t *map_config,
                       uint16_t *filter_buf,
                       uint8_t filter_size)
 {
+    
+    uart_printf("sensor->hw: gpio=%d, active_level=%d\r\n", sensor->hw.power_ctrl.gpio, sensor->hw.power_ctrl.active_level);
+
     // 复制硬件配置
-    sensor->hw = *hw_config;
+    sensor->hw = (hall_hw_config_t)*hw_config;
+    //打印sensor->hw全部成员
+    uart_printf("sensor->hw: gpio=%d, active_level=%d,adc_channel=%d\r\n", sensor->hw.power_ctrl.gpio, sensor->hw.power_ctrl.active_level, sensor->hw.adc_channel);
+    
+    hw_config->adc_channel=3;
+    uart_printf("hw_config=%d sensor->hw_new: %d\r\n",hw_config->adc_channel, sensor->hw.adc_channel);
 
     // 初始化硬件
     hall_hw_init(&sensor->hw);
+    uart_printf("init1 :%d,%d\r\n", hw_config->power_ctrl.gpio, sensor->hw.power_ctrl.gpio);
 
     // 初始化滤波器
     hall_filter_init(&sensor->filter, filter_buf, filter_size);
-
+    uart_printf("init2:%d,%d\r\n", hw_config->power_ctrl.gpio, sensor->hw.power_ctrl.gpio);
     // 初始化映射配置
     if (map_config != NULL) {
         // 使用用户提供的配置
         sensor->map = *map_config;
+         uart_printf("init3:%d,%d\r\n", hw_config->power_ctrl.gpio, sensor->hw.power_ctrl.gpio);
     } else {
         // 使用默认配置
         hall_map_init_default(&sensor->map);
+         uart_printf("init4:%d,%d\r\n", hw_config->power_ctrl.gpio, sensor->hw.power_ctrl.gpio);
     }
-
+    uart_printf("ini5 :%d,%d\r\n", hw_config->power_ctrl.gpio, sensor->hw.power_ctrl.gpio);
     sensor->enabled = true;
 }
 

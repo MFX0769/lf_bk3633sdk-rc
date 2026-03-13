@@ -46,13 +46,13 @@ typedef struct {
  * @param id 触发事件的按键 ID
  * @param event 触发的事件类型
  */
-typedef void (*app_key_callback_t)(key_id_t id, key_event_t event);
+typedef void (*key_callback_t)(key_id_t id, key_event_t event);
 
 /**
  * @brief 设置按键事件全局回调
  * @param cb 回调函数指针
  */
-void app_key_register_callback(app_key_callback_t cb);
+void key_register_callback(key_callback_t cb);
 
 /**
  * @brief 初始化按键扫描模块
@@ -71,9 +71,9 @@ void app_key_register_callback(app_key_callback_t cb);
  * };
  * 
  * // 系统初始化时调用
- * app_key_init(my_keys, sizeof(my_keys)/sizeof(key_config_t));
+ * key_init(my_keys, sizeof(my_keys)/sizeof(key_config_t));
  */
-void app_key_init(const key_config_t *p_config, uint8_t count);
+void key_init(const key_config_t *p_config, uint8_t count);
 
 /**
  * @brief 按键扫描函数
@@ -85,11 +85,11 @@ void app_key_init(const key_config_t *p_config, uint8_t count);
  * @example
  * // 在定时器中断或主循环中调用
  * if (is_time_for_10ms_task()) {
- *     app_key_scan(10);
+ *     key_scan(10);
  * }
  */
-void app_key_scan(uint16_t period_ms);
-void app_key_scan_10ms(void);
+void key_scan(uint16_t period_ms);
+void key_scan_10ms(void);
 
 /**
  * @brief 获取指定按键的最新事件
@@ -101,7 +101,7 @@ void app_key_scan_10ms(void);
  * 
  * @example
  * // 典型用法：在主循环中处理事件
- * key_event_t evt = app_key_get_event(KEY_ID_LEFT);
+ * key_event_t evt = key_get_event(KEY_ID_LEFT);
  * switch(evt) {
  *     case KEY_EVT_SHORT_PRESS:
  *         printf("Left Key Clicked\n");
@@ -112,7 +112,7 @@ void app_key_scan_10ms(void);
  *     // ... 其他事件
  * }
  */
-key_event_t app_key_get_event(key_id_t key);
+key_event_t key_get_event(key_id_t key);
 
 /**
  * @brief 查询按键当前是否处于按下状态
@@ -123,7 +123,7 @@ key_event_t app_key_get_event(key_id_t key);
  * @return true 按下
  * @return false 释放
  */
-bool app_key_is_pressed(key_id_t key);
+bool key_is_pressed(key_id_t key);
 
 /**
  * @brief 检测组合键状态
@@ -136,16 +136,16 @@ bool app_key_is_pressed(key_id_t key);
  * 
  * @example
  * // 检测 "左键 + 右键" 同时按下（例如用于进入配对模式）
- * if (app_key_check_combo((1 << KEY_ID_LEFT) | (1 << KEY_ID_RIGHT))) {
+ * if (key_check_combo((1 << KEY_ID_LEFT) | (1 << KEY_ID_RIGHT))) {
  *     // 检测到组合键按下，执行相应逻辑
  *     // 注意：通常建议在长按事件中配合检测，或者单独检测状态
  * }
  * 
  * // 进阶用法：检测 "长按左键" 的同时 "点击右键"
  * // 1. 监听右键的短按事件
- * if (app_key_get_event(KEY_ID_RIGHT) == KEY_EVT_SHORT_PRESS) {
+ * if (key_get_event(KEY_ID_RIGHT) == KEY_EVT_SHORT_PRESS) {
  *     // 2. 检查左键是否正按着
- *     if (app_key_is_pressed(KEY_ID_LEFT)) {
+ *     if (key_is_pressed(KEY_ID_LEFT)) {
  *         printf("Combo: Hold Left + Click Right\n");
  *     }
  * }
@@ -155,7 +155,7 @@ bool app_key_is_pressed(key_id_t key);
  * static uint8_t  power_step = 0;
  * static uint32_t wait_timer = 0;
  * 
- * key_event_t evt = app_key_get_event(KEY_ID_LEFT);
+ * key_event_t evt = key_get_event(KEY_ID_LEFT);
  * 
  * switch (power_step) {
  *     case 0: // 等待第一次短按
@@ -184,6 +184,6 @@ bool app_key_is_pressed(key_id_t key);
  * 
  * if (power_step == 1 && wait_timer > 0) wait_timer--;
  */
-bool app_key_check_combo(uint32_t key_mask);
+bool key_check_combo(uint32_t key_mask);
 
 #endif // _KEY_SCAN_H_

@@ -210,6 +210,9 @@ void hall_sensor_disable(hall_sensor_t *sensor);
 ```
 失能传感器硬件（省电）。
 
+注意，有些型号的hall有单独的使能失能en引脚，可以只在每次读取时使能达到省电的目的；
+但是有些引脚hall没有en失能控制，只能不断上电下电，可能导致不稳定。。。可以按需要修改hall_sensor_enable()和hall_sensor_disable()函数
+
 ---
 
 ## 核心组件设计

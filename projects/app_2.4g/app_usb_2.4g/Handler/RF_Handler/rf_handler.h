@@ -11,8 +11,8 @@
 
 #define max_rf_payload_len   32 //RF单次发送接收最大净荷长度 
 
-#define rf_send_queue_len    32
-#define rf_recv_queue_len    32
+#define rf_send_queue_len    8
+#define rf_recv_queue_len    8
 
 //发送队列项结构体定义
 #pragma pack(1)

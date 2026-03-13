@@ -614,7 +614,7 @@ void cpu_24_reduce_voltage_sleep()
     addSYS_Reg0x17 = tmp_reg;
     setf_SYS_Reg0x1_CPU_PWD;//cpu睡眠,停止执行
 
-    uart_printf("exit sleep\r\n");
+    //uart_printf("exit sleep\r\n");
     /* 硬件中断唤醒之后  cpu从这里执行----*/
   
     //    don't used 96M

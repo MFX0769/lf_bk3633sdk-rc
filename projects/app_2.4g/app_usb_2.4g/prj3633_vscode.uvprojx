@@ -423,7 +423,7 @@
                   <RVCTZI>0</RVCTZI>
                   <RVCTOtherData>0</RVCTOtherData>
                   <ModuleSelection>0</ModuleSelection>
-                  <IncludeInBuild>0</IncludeInBuild>
+                  <IncludeInBuild>1</IncludeInBuild>
                   <AlwaysBuild>2</AlwaysBuild>
                   <GenerateAssemblyFile>2</GenerateAssemblyFile>
                   <AssembleAssemblyFile>2</AssembleAssemblyFile>
@@ -492,6 +492,26 @@
               <FileName>app_shutdown.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\app\src\remote_control\app\app_shutdown.h</FilePath>
+            </File>
+            <File>
+              <FileName>app_key.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\app\src\remote_control\app\app_key.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_key.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\app\src\remote_control\app\app_key.h</FilePath>
+            </File>
+            <File>
+              <FileName>app_throttle.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\app\src\remote_control\app\app_throttle.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_throttle.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\app\src\remote_control\app\app_throttle.h</FilePath>
             </File>
           </Files>
         </Group>

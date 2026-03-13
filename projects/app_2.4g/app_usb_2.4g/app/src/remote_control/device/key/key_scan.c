@@ -20,9 +20,9 @@ typedef struct {
 
 static key_ctrl_t m_keys[KEY_ID_MAX];
 //全局统一中断回调,中心化事件分发,根据内部通过id+envent实现业务逻辑
-static app_key_callback_t m_key_callback = NULL;
+static key_callback_t m_key_callback = NULL;
 
-void app_key_register_callback(app_key_callback_t cb)
+void key_register_callback(key_callback_t cb)
 {
     m_key_callback = cb;
 }
@@ -35,7 +35,7 @@ static void trigger_event(key_id_t id, key_event_t event)
     }
 }
 
-void app_key_init(const key_config_t *p_config, uint8_t count)
+void key_init(const key_config_t *p_config, uint8_t count)
 {
     // 1. 清空所有按键状态
     memset(m_keys, 0, sizeof(m_keys));
@@ -83,7 +83,7 @@ void app_key_init(const key_config_t *p_config, uint8_t count)
     }
 }
 
-void app_key_scan(uint16_t period_ms)
+void key_scan(uint16_t period_ms)
 {
     if (period_ms == 0) {
         return;
@@ -144,12 +144,12 @@ void app_key_scan(uint16_t period_ms)
     }
 }
 
-void app_key_scan_10ms(void)
+void key_scan_10ms(void)
 {
-    app_key_scan(10);
+    key_scan(10);
 }
 
-key_event_t app_key_get_event(key_id_t key)
+key_event_t key_get_event(key_id_t key)
 {
     if (key >= KEY_ID_MAX) return KEY_EVT_NONE;
     if (!m_keys[key].enabled) return KEY_EVT_NONE;
@@ -159,7 +159,7 @@ key_event_t app_key_get_event(key_id_t key)
     return evt;
 }
 
-bool app_key_is_pressed(key_id_t key)
+bool key_is_pressed(key_id_t key)
 {
     if (key >= KEY_ID_MAX) return false;
     if (!m_keys[key].enabled) return false;
@@ -167,7 +167,7 @@ bool app_key_is_pressed(key_id_t key)
     return m_keys[key].stable_level;
 }
 
-bool app_key_check_combo(uint32_t key_mask)
+bool key_check_combo(uint32_t key_mask)
 {
     for(int i = 0; i < KEY_ID_MAX; i++) {
         if (key_mask & (1 << i)) {
