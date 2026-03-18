@@ -30,11 +30,12 @@
  * LCD显示屏模块 (LCD Display Module)
  * ============================================================================ */
 /* 新板子 */
-#define LCD_SPI_SCK     Port_Pin(0, 4)  // P04 - SPI时钟
-#define LCD_SPI_MOSI    Port_Pin(0, 5)  // P05 - SPI主机输出
-#define LCD_SPI_CS      Port_Pin(0, 6)  // P06 - SPI片选(NSS)
-#define LCD_DCX         Port_Pin(0, 7)  // P07 - 数据/命令选择
-#define LCD_RST         Port_Pin(0, 3)  // P03 - LCD复位引脚
+#define LCD_SPI_SCK     Port_Pin(0, 4)    // P04 - SPI时钟
+#define LCD_SPI_MOSI    Port_Pin(0, 5)    // P05 - SPI主机输出
+#define LCD_SPI_CS      Port_Pin(0, 6)    // P06 - SPI片选(NSS)
+#define LCD_DCX         Port_Pin(0, 7)    // P07 - 数据/命令选择
+#define LCD_RST         Port_Pin(0, 3)    // P03 - LCD复位引脚
+#define LCD_PWR_EN      Port_Pin(1, 7)    // P17 - LCD电源使能
 
 //旧板子
 // #define LCD_SPI_SCK     Port_Pin(0, 4)  // P04 - SPI时钟

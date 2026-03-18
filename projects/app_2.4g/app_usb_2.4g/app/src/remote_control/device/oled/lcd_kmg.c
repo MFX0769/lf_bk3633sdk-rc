@@ -1,3 +1,10 @@
+/*
+ * lcd_kmg.c
+ * LCD 上层绘制/UI 层：
+ * - 文本/数字绘制与图片显示封装
+ * - Kamingo UI 组件（速度、电量、骑行模式、总里程）
+ * - 绘制节奏控制（分步延时）
+ */
 #include "lcd_kmg.h"
 #include "lcdfont_controller.h"
 #include <string.h>
@@ -13,25 +20,45 @@
 extern void Delay_ms(int num);
 extern void Delay_us(int num);
 
-// UI pacing between drawing steps. Default keeps behavior close to original code.
+/**
+ * @brief UI 绘制的步进延时（毫秒）
+ * @note 默认值保持与旧实现相近的节奏
+ */
 static uint16_t s_lcd_ui_step_delay_ms = 1;
 
+/**
+ * @brief 设置每个 UI 绘制步骤之间的延时
+ * @param ms 延时毫秒
+ */
 void lcd_ui_set_step_delay_ms(uint16_t ms)
 {
     s_lcd_ui_step_delay_ms = ms;
 }
 
+/**
+ * @brief 获取当前 UI 步进延时
+ * @return 延时毫秒
+ */
 uint16_t lcd_ui_get_step_delay_ms(void)
 {
     return s_lcd_ui_step_delay_ms;
 }
 
+/**
+ * @brief 根据配置执行一次步进延时
+ */
 static void lcd_ui_step_delay(void)
 {
     if (s_lcd_ui_step_delay_ms)
         Delay_ms((int)s_lcd_ui_step_delay_ms);
 }
 
+// 字节位反转工具（bit7<->bit0），用于特定像素/字库格式
+/**
+ * @brief 字节位反转（bit7<->bit0）
+ * @param b 输入字节
+ * @return 反转后的字节
+ */
 uint8_t reverse_bits(uint8_t b) {
     b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
     b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
@@ -40,6 +67,12 @@ uint8_t reverse_bits(uint8_t b) {
 }
 
 
+// 简易整数转字符串（十进制）
+/**
+ * @brief 整数转字符串（十进制）
+ * @param num 输入整数
+ * @param str 输出字符串缓冲区
+ */
 void int_to_str(int num, char *str) {
     int i = 0;
     if (num == 0) {
@@ -68,6 +101,12 @@ void int_to_str(int num, char *str) {
 }
 
 
+// 拆分两位数字（用于数码管样式显示）
+/**
+ * @brief 拆分两位数字（个位/十位）
+ * @param num 输入 0~99
+ * @param arr 输出数组 [个位, 十位]
+ */
 static void split_digits_2(uint8_t num, int8_t arr[2]) {
     if (num > 99) {
         // 超出范围，按需处理。这里默认清零。
@@ -82,6 +121,12 @@ static void split_digits_2(uint8_t num, int8_t arr[2]) {
 
 
 // 输入一个 0~999 的数，将其各位拆分后放入 arr[3]
+// 拆分三位数字（用于数码管样式显示）
+/**
+ * @brief 拆分三位数字（个位/十位/百位）
+ * @param num 输入 0~999
+ * @param arr 输出数组 [个位, 十位, 百位]
+ */
 static void split_digits_3(uint16_t num, int8_t arr[3]) {
     if (num > 999) {
         // 超出范围，按需处理。这里默认清零。
@@ -107,6 +152,16 @@ static void split_digits_3(uint16_t num, int8_t arr[3]) {
  * @param       bc:字符背景颜色
  * @param       sizey:字符大小
  * @retval      无
+ */
+// 绘制单字符（常规坐标系，使用点阵字库）
+/**
+ * @brief 绘制单字符（常规坐标系）
+ * @param x 起始列
+ * @param y 起始行
+ * @param num 字符 ASCII 码
+ * @param fc 前景色
+ * @param bc 背景色
+ * @param sizey 字符高度
  */
 void LCD_ShowChar(uint16_t x, uint16_t y, uint8_t num, uint16_t fc, uint16_t bc, uint8_t sizey)
 {
@@ -153,6 +208,16 @@ void LCD_ShowChar(uint16_t x, uint16_t y, uint8_t num, uint16_t fc, uint16_t bc,
  * @param       bc:字符背景颜色
  * @param       sizey:字符大小
  * @retval      无
+ */
+// 绘制单字符（横屏坐标系，y 轴向上）
+/**
+ * @brief 绘制单字符（横屏坐标系，y 轴向上）
+ * @param x 起始列
+ * @param y 起始行
+ * @param ch 字符 ASCII 码
+ * @param fc 前景色
+ * @param bc 背景色
+ * @param sizey 字符高度
  */
 void LCD_ShowChar_Hor(uint16_t x, uint16_t y, uint8_t ch, uint16_t fc, uint16_t bc, uint8_t sizey)
 {
@@ -212,6 +277,13 @@ void LCD_ShowChar_Hor(uint16_t x, uint16_t y, uint8_t ch, uint16_t fc, uint16_t 
  * @param       sizey:字符大小
  * @retval      无
  */
+/**
+ * @brief 横屏下绘制空白字符（用于清除区域）
+ * @param x 起始列
+ * @param y 起始行
+ * @param bc 背景色
+ * @param sizey 字符高度
+ */
 void LCD_Show_Space_Hor(uint16_t x, uint16_t y, uint16_t bc, uint8_t sizey)
 {
     uint8_t j,temp;
@@ -243,6 +315,16 @@ void LCD_Show_Space_Hor(uint16_t x, uint16_t y, uint16_t bc, uint8_t sizey)
 
 
 
+// 绘制数字字符（横屏坐标系，数码字体）
+/**
+ * @brief 绘制数字字符（横屏数码字体）
+ * @param x 起始列
+ * @param y 起始行
+ * @param ch 数字字符（'0'~'9'）
+ * @param fc 前景色
+ * @param bc 背景色
+ * @param sizey 字符高度
+ */
 void LCD_ShowChar_Digital_Hor(uint16_t x, uint16_t y, uint8_t ch, uint16_t fc, uint16_t bc, uint8_t sizey)
 {
     uint8_t j,temp;
@@ -308,6 +390,13 @@ void LCD_ShowChar_Digital_Hor(uint16_t x, uint16_t y, uint8_t ch, uint16_t fc, u
  * @param       bc:字符背景颜色
  * @param       sizey:字符大小
  * @retval      无
+ */
+/**
+ * @brief 横屏下绘制空白字符（DMA/批量方式）
+ * @param x 起始列
+ * @param y 起始行
+ * @param bc 背景色
+ * @param sizey 字符高度
  */
 void LCD_Show_Space_Hor_dma(uint16_t x, uint16_t y, uint16_t bc, uint8_t sizey)
 {
@@ -383,6 +472,15 @@ void LCD_Show_Space_Hor_dma(uint16_t x, uint16_t y, uint16_t bc, uint8_t sizey)
   
 }
 
+/**
+ * @brief 绘制数字字符（横屏数码字体，DMA/批量方式）
+ * @param x 起始列
+ * @param y 起始行
+ * @param ch 数字字符（'0'~'9'）
+ * @param fc 前景色
+ * @param bc 背景色
+ * @param sizey 字符高度
+ */
 void LCD_ShowChar_Digital_Hor_dma(uint16_t x, uint16_t y, uint8_t ch, uint16_t fc, uint16_t bc, uint8_t sizey)
 {
     uint8_t j,temp;
@@ -504,6 +602,15 @@ void LCD_ShowChar_Digital_Hor_dma(uint16_t x, uint16_t y, uint8_t ch, uint16_t f
  * @param       sizey:字符大小
  * @retval      无
  */
+/**
+ * @brief 绘制字符（横屏，DMA/批量方式）
+ * @param x 起始列
+ * @param y 起始行
+ * @param ch 字符 ASCII 码
+ * @param fc 前景色
+ * @param bc 背景色
+ * @param sizey 字符高度
+ */
 void LCD_ShowChar_Hor_dma(uint16_t x, uint16_t y, uint8_t ch, uint16_t fc, uint16_t bc, uint8_t sizey)
 {
     uint8_t j,temp;
@@ -612,6 +719,16 @@ void LCD_ShowChar_Hor_dma(uint16_t x, uint16_t y, uint8_t ch, uint16_t fc, uint1
  * @param       sizey:字符大小
  * @retval      无
  */
+// 绘制字符串（常规坐标系）
+/**
+ * @brief 绘制字符串（常规坐标系）
+ * @param x 起始列
+ * @param y 起始行
+ * @param s 字符串
+ * @param fc 前景色
+ * @param bc 背景色
+ * @param sizey 字符高度
+ */
 void LCD_ShowString(uint16_t x, uint16_t y, const char *s, uint16_t fc, uint16_t bc, uint16_t sizey)
 {
     while ((*s <= '~') && (*s >= ' ')) // 判断是不是非法字符
@@ -634,6 +751,16 @@ void LCD_ShowString(uint16_t x, uint16_t y, const char *s, uint16_t fc, uint16_t
  * @param       bc:字符背景颜色
  * @param       sizey:字符大小
  * @retval      无
+ */
+// 绘制字符串（横屏坐标系）
+/**
+ * @brief 绘制字符串（横屏坐标系）
+ * @param x 起始列
+ * @param y 起始行
+ * @param s 字符串
+ * @param fc 前景色
+ * @param bc 背景色
+ * @param sizey 字符高度
  */
 void LCD_ShowString_Hor(uint16_t x, uint16_t y, const char *s, uint16_t fc, uint16_t bc, uint16_t sizey)
 {
@@ -1279,6 +1406,15 @@ void LCD_StrCenter(uint16_t x, uint16_t y, const char *s, uint16_t fc, uint16_t 
  * @param       pic:图片取模数组
  * @retval      无
  */
+// 显示图片（阻塞式批量写入）
+/**
+ * @brief 显示图片（阻塞式分段写入）
+ * @param x 起始列
+ * @param y 起始行
+ * @param width 宽度
+ * @param height 高度
+ * @param pic 图片数据（RGB565）
+ */
 void LCD_ShowPicture(uint16_t x, uint16_t y, uint16_t width, uint16_t height, const uint8_t pic[])
 {
     uint8_t ssd_buffer[DMA_SIZE];
@@ -1323,6 +1459,16 @@ void LCD_ShowPicture(uint16_t x, uint16_t y, uint16_t width, uint16_t height, co
  * @param       height:图片高度
  * @param       pic:图片取模数组
  * @retval      无
+ */
+// 显示图片（DMA 分段写入，data_size 为单次发送大小）
+/**
+ * @brief 显示图片（DMA 分段写入）
+ * @param x 起始列
+ * @param y 起始行
+ * @param width 宽度
+ * @param height 高度
+ * @param pic 图片数据（RGB565）
+ * @param data_size 单次发送大小（字节）
  */
 void LCD_ShowPicture_dma(uint16_t x, uint16_t y, uint16_t width, uint16_t height, const uint8_t pic[], const uint16_t data_size)
 {
@@ -1370,6 +1516,16 @@ void LCD_ShowPicture_dma(uint16_t x, uint16_t y, uint16_t width, uint16_t height
  * @param       height:图片高度
  * @param       pic:图片取模数组
  * @retval      无
+ */
+// 显示图片（按固定批次发送，适用于大图）
+/**
+ * @brief 显示图片（固定批次发送，适用于大图）
+ * @param x 起始列
+ * @param y 起始行
+ * @param width 宽度
+ * @param height 高度
+ * @param pic 图片数据（RGB565）
+ * @param data_size 单次批次大小（字节）
  */
 void LCD_ShowPicture_batch(uint16_t x, uint16_t y, uint16_t width, uint16_t height, const uint8_t pic[], const uint16_t data_size)
 {
@@ -1421,18 +1577,53 @@ void LCD_ShowPicture_batch(uint16_t x, uint16_t y, uint16_t width, uint16_t heig
 }
 
 
+/**
+ * @brief 显示里程数字（数码字体，横屏）
+ * @param x 起始列
+ * @param y 起始行
+ * @param s 数字字符串
+ * @param fc 前景色
+ * @param bc 背景色
+ * @param sizey 字符高度
+ */
 void Kamingo_Show_Kms_digital(uint16_t x, uint16_t y, const char *s, uint16_t fc, uint16_t bc, uint16_t sizey) {
      LCD_ShowStr_Digital_Hor(x, y, s, fc, bc, sizey);
 }
 
+/**
+ * @brief 显示里程单位（km）
+ * @param x 起始列
+ * @param y 起始行
+ * @param s 单位字符串
+ * @param fc 前景色
+ * @param bc 背景色
+ * @param sizey 字符高度
+ */
 static void Kamingo_Show_Kms_Unit(uint16_t x, uint16_t y, const char *s, uint16_t fc, uint16_t bc, uint8_t sizey) {
     LCD_ShowStr_Hor(x, y, s, fc, bc, sizey);
 }
 
+/**
+ * @brief 显示电量百分比字符串
+ * @param x 起始列
+ * @param y 起始行
+ * @param s 数字字符串
+ * @param fc 前景色
+ * @param bc 背景色
+ * @param sizey 字符高度
+ */
 static void Kamingo_Show_Battery_capacity(uint16_t x, uint16_t y, const char *s, uint16_t fc, uint16_t bc, uint8_t sizey) {
      LCD_ShowStr_Hor(x, y, s, fc, bc, sizey);
 }
 
+/**
+ * @brief 显示电池图标
+ * @param x 起始列
+ * @param y 起始行
+ * @param width 图标宽度
+ * @param height 图标高度
+ * @param gImage_ico 图标数据
+ */
 static void Kamingo_Show_Battery_icon(uint16_t x, uint16_t y, uint16_t width, uint16_t height, const uint8_t gImage_ico[]) {
     uint16_t data_size = sizeof(gImage_bty_1) / 20;
     // LCD_ShowPicture_batch(x, y, width, height, gImage_ico, data_size);
@@ -1440,16 +1631,44 @@ static void Kamingo_Show_Battery_icon(uint16_t x, uint16_t y, uint16_t width, ui
 }
 
 
+/**
+ * @brief 显示速度数字（数码字体，横屏）
+ * @param x 起始列
+ * @param y 起始行
+ * @param s 数字字符串
+ * @param fc 前景色
+ * @param bc 背景色
+ * @param sizey 字符高度
+ */
 void Kamingo_Show_Speed_digital(uint16_t x, uint16_t y, const char *s, uint16_t fc, uint16_t bc, uint8_t sizey) {
     LCD_ShowStr_Digital_Hor(x, y, s, fc, bc, sizey);
 }
 
+/**
+ * @brief 显示速度单位（km/h）
+ * @param x 起始列
+ * @param y 起始行
+ * @param s 单位字符串
+ * @param fc 前景色
+ * @param bc 背景色
+ * @param sizey 字符高度
+ */
 void Kamingo_Show_Speed_Unit(uint16_t x, uint16_t y, const char *s, uint16_t fc, uint16_t bc, uint8_t sizey) {
      LCD_ShowStr_Hor(x, y, s, fc, bc, sizey);
 }
 
 
 
+/**
+ * @brief 显示总里程（数码字体 + 单位）
+ * @param x 起始列
+ * @param y 起始行
+ * @param total_kms 总里程数值
+ * @param fc 前景色
+ * @param bc 背景色
+ * @param sizey 数字高度
+ * @param reset true 时重置缓存，不绘制
+ */
 void Kamingo_Show_Total_Kms(uint16_t x, uint16_t y, uint16_t total_kms, uint16_t fc, uint16_t bc, uint8_t sizey, bool reset) {
     static uint16_t last_total_kms = -1;
     uint8_t sizex = sizey / 2;
@@ -1565,6 +1784,16 @@ void Kamingo_Show_Total_Kms(uint16_t x, uint16_t y, uint16_t total_kms, uint16_t
     last_total_kms = total_kms;
 }
 
+/**
+ * @brief 显示电量百分比与电池图标
+ * @param x 起始列
+ * @param y 起始行
+ * @param battery_capacity 电量百分比
+ * @param fc 前景色
+ * @param bc 背景色
+ * @param sizey 数字高度
+ * @param is_controller_battery 是否为控制器电池（预留）
+ */
 void Kamingo_Show_Battery(uint16_t x, uint16_t y, uint8_t battery_capacity, uint16_t fc, uint16_t bc, uint8_t sizey, bool is_controller_battery) {
     char bty_str[16];
     static uint8_t last_battery_capacity = -1;
@@ -1648,6 +1877,15 @@ void Kamingo_Show_Battery(uint16_t x, uint16_t y, uint8_t battery_capacity, uint
 
 extern volatile control_model_state model_state;
 extern volatile bool cruise_on;
+/**
+ * @brief 显示骑行模式图标
+ * @param x 起始列
+ * @param y 起始行
+ * @param width 图标宽度
+ * @param height 图标高度
+ * @param ride_type 当前模式
+ * @param reset true 时重置缓存，不绘制
+ */
 void Kamingo_Show_Ride_type(uint16_t x, uint16_t y, uint16_t width, uint16_t height, control_model_state ride_type, bool reset) {
      unsigned char* ride_ico;
      static control_model_state last_ride_type = CTL_MODEL_STOP;
@@ -1690,6 +1928,16 @@ void Kamingo_Show_Ride_type(uint16_t x, uint16_t y, uint16_t width, uint16_t hei
      last_ride_type = ride_type;
 }
 
+/**
+ * @brief 显示速度（km/h，数码字体）
+ * @param x 起始列
+ * @param y 起始行
+ * @param speed 速度值
+ * @param fc 前景色
+ * @param bc 背景色
+ * @param sizey 数字高度
+ * @param reset true 时重置缓存，不绘制
+ */
 void Kamingo_Show_Speed_Kmh(uint16_t x, uint16_t y, uint16_t speed, uint16_t fc, uint16_t bc, uint8_t sizey, bool reset)
 {
     // uint8_t sizey = 56;
@@ -1793,6 +2041,9 @@ void Kamingo_Show_Speed_Kmh(uint16_t x, uint16_t y, uint16_t speed, uint16_t fc,
     // Kamingo_Show_Speed_digital(x, y, speed_str, fc, bc, 56);
 }
 
+/**
+ * @brief 测试用：切换骑行模式状态（含巡航标志）
+ */
 void modify_mode_state(void)
 {
     if (model_state == CTL_MODEL_STOP || model_state == CTL_MODEL_UNLOCK)
@@ -1817,59 +2068,47 @@ void modify_mode_state(void)
     }
 }
 
+/**
+ * @brief UI 刷新入口：按固定顺序刷新各组件
+ * @param tatal_kms 总里程
+ * @param battery_capacity 电量百分比
+ * @param speed 速度
+ */
 void update_ui(int tatal_kms, uint8_t battery_capacity, uint16_t speed)
 {
-
-    lcd_ui_step_delay();
-    // // modify_mode_state();
+    // UI 组件依次刷新，中间插入小延时以平滑显示。
+    delay_ms(30);
     Kamingo_Show_Total_Kms(6, 250, tatal_kms, WHITE, BLACK, TOTAL_KMS_DIGITAL_SIZE, false);
-    lcd_ui_step_delay();
+    delay_ms(30);
     Kamingo_Show_Battery(10, 135, battery_capacity, WHITE, BLACK, BATTERY_DIGITAL_SIZE, true);
-    lcd_ui_step_delay();
+    delay_ms(30);
     Kamingo_Show_Ride_type(60, 170, RIDE_TYPE_PIC_SIZE, RIDE_TYPE_PIC_SIZE, model_state, false);
-    lcd_ui_step_delay();
+    delay_ms(30);
     Kamingo_Show_Speed_Kmh(57, 180, speed, MYELLOW, BLACK, SPEED_KMH_DIGITAL_SIZE, false);
 }
 
+/**
+ * @brief 测试用：循环随机数据刷新 UI
+ */
 void test_lcd2(void)
 {
     static int16_t total_kms = 0;
     int16_t total_kms1 = rand() % 100;
-    // LCD_ShowPicture(10, 10, 30, 62, gImage_bty_4);
-    Delay_us(20);
+    delay_ms(30);
     LCD_KEY1_Clr();
-    lcd_ui_step_delay();
+    delay_ms(30);
     modify_mode_state();
     Kamingo_Show_Ride_type(60, 170, RIDE_TYPE_PIC_SIZE, RIDE_TYPE_PIC_SIZE, model_state, false);
-    lcd_ui_step_delay();
+    delay_ms(30);
     Kamingo_Show_Battery(10, 135, total_kms1, WHITE, BLACK, BATTERY_DIGITAL_SIZE, true);
-    lcd_ui_step_delay();
+    delay_ms(30);
     Kamingo_Show_Total_Kms(6, 250, total_kms++, WHITE, BLACK, TOTAL_KMS_DIGITAL_SIZE, false);
-    lcd_ui_step_delay();
+    delay_ms(30);
     Kamingo_Show_Speed_Kmh(57, 180, total_kms1, MYELLOW, BLACK, SPEED_KMH_DIGITAL_SIZE, false);
-    // LCD_ShowChar_Digital_Hor_dma(6, 250, total_kms + '0', WHITE, BLACK, TOTAL_KMS_DIGITAL_SIZE);
-    // LCD_ShowChar_Digital_Hor_dma(6, 210, total_kms1 + '0', WHITE, BLACK, TOTAL_KMS_DIGITAL_SIZE);
-    LCD_KEY1_Set();
+    
+    //LCD_KEY1_Set();
 
     if (total_kms >= 122) {
         total_kms = 0;
     }
-    // uart_printf("n>%d\r\n", total_kms);
-    // LCD_StrCenter(0, 80, "0.95 AMOLED", RED, WHITE, 16);
-    // LCD_StrCenter(0, 100, "PIXELS:120x240", GREEN, WHITE, 16);
-    // LCD_StrCenter(0, 120, "IC:SH9622A", BLUE, WHITE, 16);
-    // LCD_Fill(0, 140, 40, 240, RED);
-    // LCD_Fill(40, 140, 80, 240, GREEN);
-    // LCD_Fill(80, 140, 120, 240, BLUE);
-    // // Delay_ms(1);
-    // Delay_ms(1);
-    // LCD_Fill(0, 0, LCD_W, LCD_H, RED);
-    // // Delay_ms(1);
-    // LCD_Fill(0, 0, LCD_W, LCD_H, GREEN);
-    // // Delay_ms(1);
-    // LCD_Fill(0, 0, LCD_W, LCD_H, BLUE);
-    // // Delay_ms(1);
-    // LCD_Fill(0, 0, LCD_W, LCD_H, BLACK);
-    // // Delay_ms(1);
-    // LCD_Fill(0, 0, LCD_W, LCD_H, WHITE);
 }

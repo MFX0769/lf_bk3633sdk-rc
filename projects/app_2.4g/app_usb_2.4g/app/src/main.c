@@ -575,15 +575,21 @@ int main(void)
     AES_Test();
 
 
-    #if(ENABLE_LED_DISPLAY)
+    #if (ENABLE_LED_DISPLAY)
     uart_printf("init lcd display\r\n");
+    gpio_set(Port_Pin(1, 7), 0); // 设置LCD电源使能引脚为低电平
     OLED_Init(); //初始化
     uart_printf("init lcd end\r\n");
     LCD_Fill(0, 0, LCD_W, LCD_H, BLACK); //清屏
     uart_printf("fill lcd\r\n");
-    LCD_ShowString_Hor(10, 10, "OK!", WHITE, BLACK, 16);  // 测试
+    update_ui(0,(uint8_t)100,(uint8_t)0);
+    //LCD_ShowString_Hor(10, 10, "OK!", WHITE, BLACK, 16);  // 测试
     uart_printf("show string\r\n");
     #endif
+        while(1){
+            uart_printf("Testing LCD...\r\n");
+            test_lcd2();      
+        }
 
 
     #define slave 0
