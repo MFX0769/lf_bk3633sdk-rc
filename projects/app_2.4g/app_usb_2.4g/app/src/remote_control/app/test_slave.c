@@ -152,6 +152,7 @@ void test_slave_loop(void)
     while (1) {
         uint32_t now = Get_SysTick_ms();
         static uint32_t last_key_scan = 0;
+        static uint8_t last_pair = 0;
 
         /* 10ms: 按键扫描 */
         if (now - last_key_scan >= 10) {
@@ -159,29 +160,24 @@ void test_slave_loop(void)
             key_scan(10);
         }
 
-        /* 配对模式 */
+        /* 配对处理（始终调用，内部自行管理状态） */
+        Slave_Pairing_Task(&pair_flag);
+
         if (pair_flag) {
-            Slave_Pairing_Task(&pair_flag);
-
-            /* 配对结束，重新加载配置 */
-            if (!pair_flag) {
-                rf_config_load_from_flash();
-                RF_Handler_Init_ToNormal();
-
-                /* 重新加载电控地址 */
-                if (rf_config_read_device_addr(DEV_TYPE_ESC, esc_addr)) {
-                    HAL_RF_SetRxAddress(&hrf, 0, esc_addr, 5);
-                    uart_printf("ESC addr: %02X %02X %02X %02X %02X\r\n",
-                                esc_addr[0], esc_addr[1], esc_addr[2], esc_addr[3], esc_addr[4]);
-                } else {
-                    uart_printf("ESC not paired\r\n");
-                }
-
-                HAL_RF_SetRxMode(&hrf);
-            }
-
+            last_pair = 1;
             delay_ms(10);
             continue;
+        }
+
+        /* 配对刚结束，同步本地地址 */
+        if (last_pair) {
+            last_pair = 0;
+            if (rf_config_read_device_addr(DEV_TYPE_ESC, esc_addr)) {
+                HAL_RF_SetRxAddress(&hrf, 0, esc_addr, 5);
+                uart_printf("ESC addr: %02X %02X %02X %02X %02X\r\n",
+                            esc_addr[0], esc_addr[1], esc_addr[2], esc_addr[3], esc_addr[4]);
+            }
+            HAL_RF_SetRxMode(&hrf);
         }
 
         /* 业务模式：处理接收数据 */

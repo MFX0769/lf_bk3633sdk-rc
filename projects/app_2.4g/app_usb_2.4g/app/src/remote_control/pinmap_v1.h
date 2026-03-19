@@ -30,25 +30,25 @@
  * LCD显示屏模块 (LCD Display Module)
  * ============================================================================ */
 /* 新板子 */
-// #define LCD_SPI_SCK     Port_Pin(0, 4)    // P04 - SPI时钟
-// #define LCD_SPI_MOSI    Port_Pin(0, 5)    // P05 - SPI主机输出
-// #define LCD_SPI_CS      Port_Pin(0, 6)    // P06 - SPI片选(NSS)
-// #define LCD_DCX         Port_Pin(0, 7)    // P07 - 数据/命令选择
-// #define LCD_RST         Port_Pin(0, 3)    // P03 - LCD复位引脚
-// #define LCD_PWR_EN      Port_Pin(1, 7)    // P17 - LCD电源使能
-
-//旧板子
 #define LCD_RST         Port_Pin(0, 3)    // P03 - LCD复位引脚
 #define LCD_SPI_SCK     Port_Pin(0, 4)    // P04 - SPI时钟
 #define LCD_SPI_MOSI    Port_Pin(0, 5)    // P05 - SPI主机输出
-#define LCD_SPI_CS      Port_Pin(0, 7)    // P06 - SPI片选(NSS)
-#define LCD_DCX         Port_Pin(1, 7)    // P07 - 数据/命令选择
-#define LCD_KEY1_GPIO_PIN Port_Pin(1, 6)  // P16 - LCD按键1
-#define LCD_PWR_EN      Port_Pin(1, 1)    // P11 - 屏幕电源使能
+#define LCD_SPI_CS      Port_Pin(0, 6)    // P06 - SPI片选(NSS)
+#define LCD_DCX         Port_Pin(0, 7)    // P07 - 数据/命令选择
+#define LCD_PWR_EN      Port_Pin(1, 7)    // P17 - LCD电源使能
+
+//旧板子
+// #define LCD_RST         Port_Pin(0, 3)    // P03 - LCD复位引脚
+// #define LCD_SPI_SCK     Port_Pin(0, 4)    // P04 - SPI时钟
+// #define LCD_SPI_MOSI    Port_Pin(0, 5)    // P05 - SPI主机输出
+// #define LCD_SPI_CS      Port_Pin(0, 7)    // P06 - SPI片选(NSS)
+// #define LCD_DCX         Port_Pin(1, 7)    // P07 - 数据/命令选择
+// #define LCD_KEY1_GPIO_PIN Port_Pin(1, 6)  // P16 - LCD按键1
+// #define LCD_PWR_EN      Port_Pin(1, 1)    // P11 - 屏幕电源使能
 /* ============================================================================
  * 霍尔传感器模块 (Hall Sensor Module)
  * ============================================================================ */
-#define HALL_PWR_EN       Port_Pin(1, 0)  // P10
+#define HALL_PWR_EN       Port_Pin(1, 0)  // P10  低电平有效
 #define HALL_ADC_OUT      Port_Pin(3, 1)  // P31 (ADC Channel 1)
 
 /* ============================================================================

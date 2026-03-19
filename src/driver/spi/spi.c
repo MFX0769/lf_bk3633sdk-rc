@@ -76,19 +76,20 @@ void spi_init(uint8_t mode,uint8_t freq_div,uint8_t bit_wdth)
 {
     // SPI clock enable
     SET_SPI_POWER_UP;     
-    
+    uart_printf("SPI initialized.\r\n");
     // Enable GPIO P0.4, P0.5, P0.6, P0.7 peripheral function for spi
-    // gpio_config(Port_Pin(0,2),OUTPUT,PULL_NONE);
-    gpio_config(Port_Pin(0,3),GPIO_OUTPUT,GPIO_PULL_NONE);
-    gpio_config(Port_Pin(1,7),GPIO_OUTPUT,GPIO_PULL_NONE);
-
-    gpio_config(Port_Pin(0,4),GPIO_SC_FUN,GPIO_PULL_NONE);
-    gpio_config(Port_Pin(0,5),GPIO_SC_FUN,GPIO_PULL_NONE);
-    gpio_config(Port_Pin(0,6),GPIO_SC_FUN,GPIO_PULL_NONE);
-    gpio_config(Port_Pin(0,7),GPIO_SC_FUN,GPIO_PULL_NONE);
     
-    gpio_config(Port_Pin(0,16),GPIO_OUTPUT,GPIO_PULL_NONE);
+    // gpio_config(Port_Pin(0,3),GPIO_OUTPUT,GPIO_PULL_NONE);
+    // gpio_config(Port_Pin(1,7),GPIO_OUTPUT,GPIO_PULL_NONE);
 
+    // gpio_config(Port_Pin(0,4),GPIO_SC_FUN,GPIO_PULL_NONE);
+    // gpio_config(Port_Pin(0,5),GPIO_SC_FUN,GPIO_PULL_NONE);
+    // gpio_config(Port_Pin(0,6),GPIO_SC_FUN,GPIO_PULL_NONE);
+    // gpio_config(Port_Pin(0,7),GPIO_SC_FUN,GPIO_PULL_NONE);
+    
+    // gpio_config(Port_Pin(0,16),GPIO_OUTPUT,GPIO_PULL_NONE);
+
+    uart_printf("SPI_GPIO initialized.\r\n");
     SPI_REG0X0_CFG = (0x01UL << POS_SPI_REG0X0_SPIEN)                   
                     | (CKPHA_CLK1 << POS_SPI_REG0X0_CKPHA)
                     | (CKPOL_L << POS_SPI_REG0X0_CKPOL)
@@ -114,6 +115,7 @@ void spi_init(uint8_t mode,uint8_t freq_div,uint8_t bit_wdth)
     spi_param.read_complete_cb=NULL;
 
     // gpio_set(0x07, 1);
+    uart_printf("SPI initialized complete.\r\n");
     
 }	
 

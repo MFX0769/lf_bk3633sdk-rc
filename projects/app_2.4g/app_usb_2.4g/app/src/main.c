@@ -461,15 +461,29 @@ void hall_test_example(void) {
     hall_sensor_t hall;
     uint16_t filter_buf[8] = {0};
     
-   hall_hw_config_t hw_config = {
-        .adc_channel = 2,
+    //旧板子
+//    hall_hw_config_t hw_config = {
+//         .adc_channel = 2,
+//         .en_ctrl = {
+//             .gpio = Port_Pin(1,2),
+//             .active_level = 0,
+//         },
+//         .power_ctrl = {
+//             .gpio = Port_Pin(1,0),
+//             .active_level = 1,
+//         },
+//     };
+
+ //新板子
+ hall_hw_config_t hw_config = {
+        .adc_channel = 1,
         .en_ctrl = {
-            .gpio = Port_Pin(1,2),
+            .gpio = Port_Pin(1,0),
             .active_level = 0,
         },
         .power_ctrl = {
             .gpio = Port_Pin(1,0),
-            .active_level = 1,
+            .active_level = 0,
         },
     };
 
@@ -500,7 +514,8 @@ void hall_test_example(void) {
         vofa_senddata(data, 3);
 
         //uart_printf("Throttle: %d, Throttle filtered: %d\r\n", throttle_value, throttle_value_filter);
-        delay_ms(5);
+        uart_printf("adc: %d, Throttle filtered: %d\r\n", hall.data.raw, hall.data.filtered);
+        delay_ms(100);
 
     }
     
@@ -551,7 +566,8 @@ int main(void)
 
 
     #if(ADC_DRIVER)
-    //adc_init(2,1);
+    adc_init(2,1);
+    adc_init(1,1);
     //uart_printf("init adc:%d\r\n", Get_SysTick_ms());
     #endif
 
@@ -570,8 +586,20 @@ int main(void)
     GLOBAL_INT_START();
     uart_printf("GLOBAL_INT_START:%d\r\n", Get_SysTick_ms());
 
-    gpio_config(Port_Pin(1, 7), GPIO_OUTPUT,GPIO_PULL_NONE);
+    
+    
 #if(SPI_DRIVER)
+    // SCK,MOSI NSS,DCX等spi的gpio初始化
+    // gpio_config(Port_Pin(0,3),GPIO_OUTPUT,GPIO_PULL_NONE);
+    // gpio_config(Port_Pin(1,7),GPIO_OUTPUT,GPIO_PULL_NONE);
+
+    // gpio_config(Port_Pin(0,4),GPIO_SC_FUN,GPIO_PULL_NONE);
+    // gpio_config(Port_Pin(0,5),GPIO_SC_FUN,GPIO_PULL_NONE);
+    // gpio_config(Port_Pin(0,6),GPIO_SC_FUN,GPIO_PULL_NONE);
+    // gpio_config(Port_Pin(0,7),GPIO_SC_FUN,GPIO_PULL_NONE);
+    
+    // gpio_config(Port_Pin(0,16),GPIO_OUTPUT,GPIO_PULL_NONE);
+
     spi_init(0,0,0);
     uart_printf("init spi:%d\r\n", Get_SysTick_ms());
 #endif
@@ -585,28 +613,38 @@ int main(void)
     //update_ui(0, (uint8_t)100, (uint16_t)0);
     update_ui_test(10, 85);
     #endif
-   uint8_t hall=0,soc=0;
-    while(1){
-        //uart_printf("Testing LCD.\r\n");
-        //test_lcd2();      
-        hall=(hall+1)%99;
-        soc=(soc+2)%99;
+    // uart_printf("Main loop initialized.\r\n");
+    // delay_ms(100);
+    // while(1){
+    //     uart_printf("Main loop running low voltage...\r\n");
+    //     delay_ms(100);
+    //     gpio_config(Port_Pin(0,0),GPIO_FLOAT,GPIO_PULL_NONE); //uart
+    //     gpio_config(Port_Pin(0,1),GPIO_FLOAT,GPIO_PULL_NONE);
 
-        update_ui_test(hall, soc);
+    //     gpio_config(Port_Pin(0,2),GPIO_INPUT,GPIO_PULL_LOW); //key1
+    //     gpio_config(Port_Pin(1,6),GPIO_INPUT,GPIO_PULL_LOW); //key2
+        
+    //     // gpio_config(Port_Pin(1,1),GPIO_OUTPUT,GPIO_PULL_LOW); //control_adc
 
-    }
+    //     //cpu_24_reduce_voltage_sleep(); //进入低电压睡眠
+    // }
+    //hall_test_example();
 
 
-    #define slave 0
-
+    #define slave 1
     #if slave
     extern  void test_slave_loop(void);
     test_slave_loop();
     #else
     RC_Scheduler_t sched;
+
+
     RC_Scheduler_Init(&sched);
     RC_Scheduler_Task(&sched);
     #endif
+
+
+
 
     /*----------------------------测试按键功能--------------------------------------*/
     const key_config_t my_keys[] = {

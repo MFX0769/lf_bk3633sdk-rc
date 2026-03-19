@@ -3,7 +3,7 @@
 
 #include "spi.h"
 #include "drv_gpio.h"
-
+#include "pinmap_v1.h"
 
 
 /* 定义液晶分辨率 */
@@ -13,15 +13,23 @@
 #define LCD_H 240
 
 
-/* 定义管脚端口 */
-#define LCD_RES_GPIO_PIN  Port_Pin(0, 3)
+/* 定义管脚端口 旧板子*/
+// #define LCD_RES_GPIO_PIN  Port_Pin(0, 3)
+// #define LCD_SCK_GPIO_PIN  Port_Pin(0, 4)
+// #define LCD_MOSI_GPIO_PIN Port_Pin(0, 5)
+// #define LCD_CS_GPIO_PIN   Port_Pin(0, 7)
+// #define LCD_DC_GPIO_PIN   Port_Pin(1, 7)
+// #define LCD_KEY1_GPIO_PIN Port_Pin(1, 6)
 
-#define LCD_SCK_GPIO_PIN  Port_Pin(0, 4)
-#define LCD_MOSI_GPIO_PIN Port_Pin(0, 5)
 
-#define LCD_CS_GPIO_PIN   Port_Pin(0, 7)
-#define LCD_DC_GPIO_PIN   Port_Pin(1, 7)
+#define LCD_RES_GPIO_PIN  LCD_RST
+#define LCD_SCK_GPIO_PIN  LCD_SPI_SCK
+#define LCD_MOSI_GPIO_PIN LCD_SPI_MOSI
+#define LCD_CS_GPIO_PIN   LCD_SPI_CS
+#define LCD_DC_GPIO_PIN   LCD_DCX
 #define LCD_KEY1_GPIO_PIN Port_Pin(1, 6)
+
+
 /* 定义端口电平状态 */
 #define LCD_SCK_Clr() gpio_set(LCD_SCK_GPIO_PIN, 0)
 #define LCD_SCK_Set() gpio_set(LCD_SCK_GPIO_PIN, 1)

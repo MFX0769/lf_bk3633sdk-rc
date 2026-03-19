@@ -45,8 +45,11 @@ static void app_key_event_handler(key_id_t id, key_event_t event) {
                 last_time = now;
 
                 if(cnt >= 5) {
-                    pair_flag = 1;
-                    uart_printf("Enter Pairing Mode (KEY2 x5)\r\n");
+                    pair_flag = !pair_flag;  // 翻转：进入/退出配对
+                    if (pair_flag)
+                        uart_printf("Enter Pairing Mode (KEY2 x5)\r\n");
+                    else
+                        uart_printf("Exit Pairing Mode (KEY2 x5)\r\n");
                     cnt = 0;
                 }
             }
@@ -76,8 +79,8 @@ void app_key_init(void) {
 /**
  * @brief 按键扫描
  */
-void app_key_scan(void) {
-    key_scan(10);
+void app_key_scan(uint8_t ms_period) {
+    key_scan(ms_period);
 }
 
 /**
@@ -85,6 +88,13 @@ void app_key_scan(void) {
  */
 uint8_t app_key_get_pair_flag(void) {
     return pair_flag;
+}
+
+/**
+ * @brief 获取配对标志指针（供Host_Pairing_Task直接操作）
+ */
+uint8_t* app_key_get_pair_flag_ptr(void) {
+    return &pair_flag;
 }
 
 /**

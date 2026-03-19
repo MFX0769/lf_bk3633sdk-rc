@@ -21,15 +21,28 @@ static uint16_t filter_buf[8];
  * @brief 油门模块初始化
  */
 void app_throttle_init(void) {
+    //旧板子
+    // hall_hw_config_t hw_config = {
+    //     .adc_channel = 2,
+    //     .en_ctrl = {
+    //         .gpio = Port_Pin(1,2),
+    //         .active_level = 0,
+    //     },
+    //     .power_ctrl = {
+    //         .gpio = Port_Pin(1,0),
+    //         .active_level = 1,
+    //     },
+    // };
+
     hall_hw_config_t hw_config = {
-        .adc_channel = 2,
+        .adc_channel = 1,
         .en_ctrl = {
-            .gpio = Port_Pin(1,2),
+            .gpio = Port_Pin(1,0),
             .active_level = 0,
         },
         .power_ctrl = {
             .gpio = Port_Pin(1,0),
-            .active_level = 1,
+            .active_level = 0,
         },
     };
 

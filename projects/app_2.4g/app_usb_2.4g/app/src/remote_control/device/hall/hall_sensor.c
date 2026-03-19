@@ -19,7 +19,7 @@ static void delay_us(int num)
     int x, y;
     for(y = 0; y < num; y++)
     {
-        for(x = 0; x < 10; x++);
+        for(x = 0; x < 5; x++);
     }
 }
 
@@ -309,7 +309,6 @@ void hall_sensor_init(hall_sensor_t *sensor,
     //打印sensor->hw全部成员
     uart_printf("sensor->hw: gpio=%d, active_level=%d,adc_channel=%d\r\n", sensor->hw.power_ctrl.gpio, sensor->hw.power_ctrl.active_level, sensor->hw.adc_channel);
     
-    hw_config->adc_channel=3;
     uart_printf("hw_config=%d sensor->hw_new: %d\r\n",hw_config->adc_channel, sensor->hw.adc_channel);
 
     // 初始化硬件

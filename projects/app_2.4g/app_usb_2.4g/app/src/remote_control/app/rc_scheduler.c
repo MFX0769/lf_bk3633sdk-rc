@@ -24,6 +24,7 @@
 #include "debug.h"
 #include <string.h>
 #include "hal_drv_rf.h"
+#include "drv_gpio.h"
 
 extern RF_HandleTypeDef hrf;
 
@@ -37,7 +38,6 @@ static rc_ctrl_t       s_ctrl;              /* 当前下发数据 */
 static proto_tracker_t s_tracker;           /* seq跟踪器 */
 static mc_status_t     s_mc_status;         /* 电控状态 */
 static uint8_t         s_mc_online;         /* 电控在线标志 */
-static uint8_t         s_pair_flag;         /* 配对标志 */
 
 /**
  * @brief 打包并发送控制帧
@@ -61,9 +61,7 @@ static void comm_process_rx(void)
 
     while (RF_rxQueue_Recv(&rx_data, &rx_len, &pipes)) {
         if (rx_len < 6) continue;
-
         uint8_t cmd = rx_data[5];
-
         switch (cmd) {
         case CMD_MC_STATUS: {
             uint8_t src_dev, dst_dev, ack_seq;
@@ -115,16 +113,17 @@ void RC_Scheduler_Init(RC_Scheduler_t *sched)
 {
     memset(sched, 0, sizeof(RC_Scheduler_t));
 
+    app_key_init();
+
     /* 锁定电源 */
     app_board_power_on();
 
-    /* 从Flash读取RF配置 */
+    /* 从Flash读取RF设备地址 */
     rf_config_load_from_flash();
 
     /* 初始化硬件 */
     RF_Handler_Init();
     app_throttle_init();
-    app_key_init();
 
     /* 初始化通信层 */
     tracker_init(&s_tracker);
@@ -132,7 +131,7 @@ void RC_Scheduler_Init(RC_Scheduler_t *sched)
     s_ctrl.mode = MODE_ASSIST;
     s_ctrl.throttle = 0;
     s_mc_online = 0;
-    s_pair_flag = 0;
+
 
     /* 从Flash加载电控地址，如果已配对则应用 */
     if (rf_config_read_device_addr(DEV_TYPE_ESC, s_esc_addr)) {
@@ -145,7 +144,7 @@ void RC_Scheduler_Init(RC_Scheduler_t *sched)
         HAL_RF_GetRxAddress(&hrf, 0, s_esc_addr);
         uart_printf("ESC not paired, using default addr\r\n");
     }
-
+    
     sched->initialized = 1;
     uart_printf("RC_Scheduler_Init done\r\n");
 }
@@ -158,49 +157,39 @@ void RC_Scheduler_Task(RC_Scheduler_t *sched)
     debug_print_rf_registers();
 
     uint32_t ts[8] = {0};
-    uint32_t rf_guard_deadline = 0;
-    static uint8_t sleep_flag;
+    static uint8_t sleep_flag = 1;
+    static uint8_t last_pair = 0;
 
     while (1) {
         uint32_t now = Get_SysTick_ms();
 
         /* ========== 10ms: 按键扫描 ========== */
-        if (now - ts[0] >= 10) {
+        if (now - ts[0] >= 20) {
             ts[0] = now;
-            app_key_scan();
-
-            /* 检测配对触发 */
-            if (app_key_get_pair_flag()) {
-                app_key_clear_pair_flag();
-                s_pair_flag = 1;
-                uart_printf("Pairing triggered by key\r\n");
-            }
+            app_key_scan(20);
         }
 
-        /* ========== 配对模式 ========== */
-        if (s_pair_flag) {
-            Host_Pairing_Task(&s_pair_flag);
+        /* ========== 配对处理（始终调用，内部自行管理状态） ========== */
+        uint8_t *pair_flag_ptr = app_key_get_pair_flag_ptr();
+        Host_Pairing_Task(pair_flag_ptr);
 
-            /* 配对结束（无论成功失败），重新从Flash加载并初始化 */
-            if (!s_pair_flag) {
-                rf_config_load_from_flash();
-                RF_Handler_Init_ToNormal();
+        if (*pair_flag_ptr) { //如果配对标志被按键设置为1进入配对，记录last_pair状态
+            last_pair = 1;
+            delay_ms(10);
+            sleep_flag = 0;
+        } else {
+            /* 配对刚结束，同步本地ESC地址缓存 */
+            if (last_pair) {
+                last_pair = 0;
                 tracker_init(&s_tracker);
-
-                /* 重新加载电控地址 */
                 if (rf_config_read_device_addr(DEV_TYPE_ESC, s_esc_addr)) {
                     HAL_RF_SetTxAddress(&hrf, s_esc_addr, 5);
                     HAL_RF_SetRxAddress(&hrf, 0, s_esc_addr, 5);
                     uart_printf("ESC addr: %02X %02X %02X %02X %02X\r\n",
-                                s_esc_addr[0], s_esc_addr[1], s_esc_addr[2], s_esc_addr[3], s_esc_addr[4]);
-                } else {
-                    HAL_RF_GetRxAddress(&hrf, 0, s_esc_addr);
-                    uart_printf("ESC not paired, using default addr\r\n");
+                        s_esc_addr[0], s_esc_addr[1], s_esc_addr[2], s_esc_addr[3], s_esc_addr[4]);
                 }
             }
-            /* 配对期间跳过RF业务逻辑 */
-            delay_ms(10);
-        }else{
+            sleep_flag = 1;
 
             /* ========== 50ms: 油门更新+RF发送+处理ACK ========== */
             if (now - ts[2] >= 50) {
@@ -208,20 +197,14 @@ void RC_Scheduler_Task(RC_Scheduler_t *sched)
                 static uint8_t hb_cnt;
                 hb_cnt++;
 
-                /* 更新油门数据,并判断是否发送 */
                 control_update_and_send();
-                /* 500ms心跳: 无论油门是否变化，强制发一帧 */
                 if (hb_cnt >= 10) {
                     hb_cnt = 0;
-                    comm_send_ctrl_frame();  // 心跳=强制发当前业务数据
+                    comm_send_ctrl_frame();
                 }
-
-                /* 发送后处理ACK payload */
                 comm_process_rx();
             }
-
         }
-
         
         /* ========== 100ms: LCD刷新 ========== */
         if (now - ts[3] >= 100) {
@@ -235,15 +218,27 @@ void RC_Scheduler_Task(RC_Scheduler_t *sched)
             app_board_shutdown(sched->shutdown_flag);
         }
 
-        /* ========== 5000ms: 电池状态查询 ========== */
+        /* ========== 5000ms: 电池状态查询 ========== */  
         if (now - ts[6] >= 5000) {
             ts[6] = now;
             /* TODO: app_bat_status_process(); */
         }
 
         /* ========== 睡眠判断 ========== */
-        delay_ms(2);
-        app_enter_sleep_with_wakeup_by_timer(20, sleep_flag);
+        //delay_ms(6); //延时一段时间等rf射频模块处理完
+        
+        //等到rf射频模块空闲为止(最大是maxrt的发送时间)，且加上超时防止意外卡死
+        uint32_t start_time = Get_SysTick_ms();
+        while(hrf.TxState!=TX_IDLE) {
+            if (Get_SysTick_ms() - start_time > 10) { // 超时10ms
+                break;
+            }
+        }
+
+         
+        // gpio_config(Port_Pin(0,0),GPIO_FLOAT,GPIO_PULL_NONE); //uart关掉
+        // gpio_config(Port_Pin(0,1),GPIO_FLOAT,GPIO_PULL_NONE);
+        app_enter_sleep_with_wakeup_by_timer(40, sleep_flag);
     }
 }
 

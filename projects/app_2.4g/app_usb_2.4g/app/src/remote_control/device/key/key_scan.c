@@ -1,5 +1,6 @@
 #include "key_scan.h"
 #include <string.h>
+#include "user_config.h"
 
 // 配置参数（以毫秒为单位）
 #define KEY_DEBOUNCE_MS             20     // 默认消抖时间 20ms
@@ -68,6 +69,8 @@ void key_init(const key_config_t *p_config, uint8_t count)
 
         // 3. 配置 GPIO
         // 根据有效电平选择合适的上下拉
+        // uart_printf("KEY[%d] Pin config: phys_pin=%d, active_state=%d\r\n", 
+        //     i, pin, p_key->active_state);
         gpio_config(pin, GPIO_INPUT, p_key->active_state ? GPIO_PULL_LOW : GPIO_PULL_HIGH);
         
         // 4. 初始化当前状态

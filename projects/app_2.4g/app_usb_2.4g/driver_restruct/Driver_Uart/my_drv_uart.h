@@ -93,6 +93,6 @@ extern my_queue_t uart0_txQueue; // UART0发送队列
 void uart_init(uint32_t baudrate);
 void uart_isr(void);
 void uart_send(void *buff, uint16_t len);
-int uart0_printf(const char *fmt,...);
+int  uart0_printf(const char *fmt,...);
 
 #endif /* _MY_DRV_UART_H_ */

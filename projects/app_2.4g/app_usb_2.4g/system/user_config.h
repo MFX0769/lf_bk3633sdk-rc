@@ -38,7 +38,7 @@
 #define SPI_DRIVER              1
 #define AON_RTC_DRIVER          0
 
-#define ENABLE_LED_DISPLAY      1
+#define ENABLE_LED_DISPLAY      0
 
 
 #define RF_DRIVER          1

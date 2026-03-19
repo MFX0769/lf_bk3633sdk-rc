@@ -92,16 +92,14 @@ void Slave_Pairing_Task(uint8_t* flag) {
     static uint8_t last_flag = 0;
     static uint8_t def_addr[5];  // static: 保持配对地址
 
+    // flag=0: 未配对或已退出
     if (!(*flag)) {
-        if (g_slave_ctrl.state != SLAVE_PAIR_IDLE) {
-            // 退出配对：重新从Flash加载配置，初始化为业务模式
+        if (last_flag) {
+            // 1→0 跳变：cleanup一次
             rf_config_load_from_flash();
             RF_Handler_Init_ToNormal();
-
-            // 清空队列
             RF_txQueue_Clear();
             RF_rxQueue_clear();
-
             g_slave_ctrl.state = SLAVE_PAIR_IDLE;
             uart_printf("Slave: Pairing Stopped.\n");
         }
@@ -179,6 +177,8 @@ void Slave_Pairing_Task(uint8_t* flag) {
 
                     //进入验证
                     g_slave_ctrl.verify_cnt = 0;
+                    g_slave_ctrl.reach_goal_flag = 0;
+                    g_slave_ctrl.last_ping_recv_timestamp = Get_SysTick_ms();
                     g_slave_ctrl.start_wait = Get_SysTick_ms();
                     g_slave_ctrl.state = SLAVE_PAIR_VERIFY_PHASE;
                     return; 
@@ -238,15 +238,10 @@ void Slave_Pairing_Task(uint8_t* flag) {
             uart_printf("Slave: Pairing Process Success Completed.\n");
             printf_txrx_addr();
 
-            // 保存配对结果：从机保存自己的地址（用于RX接收）
-            // 注意：这里保存的是自己的RX地址，不是对方的地址
-            // 配对生成的new_addr就是本设备的接收地址
             rf_config_update_device_addr(DEV_TYPE_ESC, g_slave_ctrl.resp_pkt.new_addr);
             rf_config_save_to_flash();
 
-            // 重置状态，准备下次配对
-            g_slave_ctrl.state = SLAVE_PAIR_IDLE;
-
+            // flag置0，下次调用时last_flag=1触发cleanup恢复RF
             *flag = 0;
             break;
     }
@@ -285,21 +280,19 @@ static device_type_t get_device_type_by_slave_id(uint32_t slave_id)
 void Host_Pairing_Task(uint8_t* flag) {
     static uint8_t last_flag = 0;
     static uint8_t def_addr[5];  // static: 保持配对地址
-    //stop直接返回
+
+    // flag=0: 未配对或已退出
     if (!(*flag)) {
-        if (g_host_ctrl.state != HOST_PAIR_IDLE) {
-            // 退出配对：重新从Flash加载配置，初始化为业务模式
+        if (last_flag) {
+            // 1→0 跳变：cleanup一次
             rf_config_load_from_flash();
             RF_Handler_Init_ToNormal();
-
-            // 清空队列
             RF_txQueue_Clear();
             RF_rxQueue_clear();
-
             g_host_ctrl.state = HOST_PAIR_IDLE;
             uart_printf("Host: Pairing Stopped.\n");
         }
-        last_flag = 0;  // 重置标志，允许下次重新初始化
+        last_flag = 0;
         return;
     }
     //flag从0->1,开始配对,进行一次初始化
@@ -318,11 +311,11 @@ void Host_Pairing_Task(uint8_t* flag) {
         rf_config_get_pair_addr(def_addr);
         HAL_RF_SetTxAddress(&hrf, def_addr, 5);
         HAL_RF_SetRxAddress(&hrf, 0, def_addr, 5);
-        uart_printf("HOST_PAIR_WAIT_REQ T: ");
-        for(int i=0;i<5;i++) uart_printf("%02X ", (volatile uint32_t*)(&TRX_TX_ADDR_0)[i]);
-        uart_printf("R: ");
-        for(int i=0;i<5;i++) uart_printf("%02X ", (volatile uint32_t*)(&TRX_RX_ADDR_P0_0)[i]);
-        uart_printf("\n");
+        // uart_printf("HOST_PAIR_WAIT_REQ T: ");
+        // for(int i=0;i<5;i++) uart_printf("%02X ", (volatile uint32_t*)(&TRX_TX_ADDR_0)[i]);
+        // uart_printf("R: ");
+        // for(int i=0;i<5;i++) uart_printf("%02X ", (volatile uint32_t*)(&TRX_RX_ADDR_P0_0)[i]);
+        // uart_printf("\n");
         
         HAL_RF_SetRxMode(&hrf);
         printf_all_registers();
@@ -336,7 +329,7 @@ void Host_Pairing_Task(uint8_t* flag) {
 
     RF_Service_Handler(&hrf);
 
-    uart_printf("Host: state=%d, flag=%d\n", g_host_ctrl.state, *flag);
+    //uart_printf("Host: state=%d, flag=%d\n", g_host_ctrl.state, *flag);
 
     switch (g_host_ctrl.state) {
         
@@ -349,12 +342,11 @@ void Host_Pairing_Task(uint8_t* flag) {
         case HOST_PAIR_WAIT_REQ:{
             HAL_RF_SetTxAddress(&hrf, def_addr, 5);
             HAL_RF_SetRxAddress(&hrf, 0, def_addr, 5);
-            uart_printf("HOST_PAIR_WAIT_REQ T: ");
-            for(int i=0;i<5;i++) uart_printf("%02X ", (volatile uint32_t*)(&TRX_TX_ADDR_0)[i]);
-            uart_printf("R: ");
-            for(int i=0;i<5;i++) uart_printf("%02X ", (volatile uint32_t*)(&TRX_RX_ADDR_P0_0)[i]);
-            uart_printf("\n");
-
+            // uart_printf("HOST_PAIR_WAIT_REQ T: ");
+            // for(int i=0;i<5;i++) uart_printf("%02X ", (volatile uint32_t*)(&TRX_TX_ADDR_0)[i]);
+            // uart_printf("R: ");
+            // for(int i=0;i<5;i++) uart_printf("%02X ", (volatile uint32_t*)(&TRX_RX_ADDR_P0_0)[i]);
+            // uart_printf("\n");
 
             
             if (RF_rxQueue_Recv(&recv_req, &len, NULL) == 1) {
@@ -474,10 +466,8 @@ void Host_Pairing_Task(uint8_t* flag) {
             rf_config_update_device_addr(g_host_ctrl.paired_dev_type, g_host_ctrl.resp_pkt.new_addr);
             rf_config_save_to_flash();
 
-            // 重置状态，准备下次配对
-            g_host_ctrl.state = HOST_PAIR_IDLE;
-
-            *flag = 0;//配对完成后，将flag设置为0，结束流程
+            // flag置0，下次调用时last_flag=1触发cleanup恢复RF
+            *flag = 0;
             break;
         }
             
