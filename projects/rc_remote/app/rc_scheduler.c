@@ -183,12 +183,14 @@ void RC_Scheduler_Init(RC_Scheduler_t *sched)
 
     app_key_init();
 
+
     /* 初始化电池管理并锁定电源 */
     bat_manage_init(&s_bat, &s_bat_hw);
     bat_manage_power_on(&s_bat);
 
     /* 从Flash读取RF设备地址 */
     rf_config_load_from_flash();
+    
 
     /* 初始化硬件 */
     RF_Handler_Init();
@@ -217,6 +219,9 @@ void RC_Scheduler_Init(RC_Scheduler_t *sched)
 
     sched->initialized = 1;
     uart_printf("RC_Scheduler_Init done\r\n");
+
+            
+
 }
 
 void RC_Scheduler_Task(RC_Scheduler_t *sched)
@@ -227,7 +232,7 @@ void RC_Scheduler_Task(RC_Scheduler_t *sched)
     debug_print_rf_registers();
 
     uint32_t ts[8] = {0};
-    static uint8_t sleep_flag = 1;
+    static uint8_t allow_sleep_flag = 1;
     static uint8_t last_pair = 0;
 
     while (1) {
@@ -246,7 +251,7 @@ void RC_Scheduler_Task(RC_Scheduler_t *sched)
         if (*pair_flag_ptr) { //如果配对标志被按键设置为1进入配对，记录last_pair状态
             last_pair = 1;
             delay_ms(10);
-            sleep_flag = 0;
+            allow_sleep_flag = 0;
         } else {
             /* 配对刚结束，重新加载所有设备地址 */
             if (last_pair) {
@@ -260,41 +265,42 @@ void RC_Scheduler_Task(RC_Scheduler_t *sched)
                     HAL_RF_SetRxAddress(&hrf, 0, s_esc_addr, 5);
                 }
             }
-            sleep_flag = 1;
+            allow_sleep_flag = 1;
 
-            /* ========== 80ms: 油门更新+RF发送+处理ACK ========== */
+            /* ========== 80ms: RF通信处理（电控+电池） ========== */
             if (now - ts[2] >= 80) {
                 ts[2] = now;
                 static uint8_t hb_cnt;
+                static uint8_t bat_query_cnt;
                 hb_cnt++;
+                bat_query_cnt++;
 
+                /* 1. 电控通信 */
                 if (s_esc_paired) {
-                    /* 切换到电控地址 */
                     HAL_RF_SetTxAddress(&hrf, s_esc_addr, 5);
                     HAL_RF_SetRxAddress(&hrf, 0, s_esc_addr, 5);
 
                     control_update_and_send();
 
-                    /* 心跳：如果油门没有触发发送，则强制发一帧心跳保活 */
+                    /* 心跳：800ms发一次保活 */
                     if (hb_cnt >= 10) {
                         hb_cnt = 0;
                         if (!tracker_is_pending(&s_tracker)) {
                             comm_send_ctrl_frame();
                         }
                     }
-                }
-                comm_process_rx();
-            }
-
-            /* ========== 500ms: 电池查询 ========== */
-            if (now - ts[1] >= 500) {
-                ts[1] = now;
-                if (s_bat_paired) {
-                    /* 切换到电池地址发送查询 */
-                    HAL_RF_SetTxAddress(&hrf, s_bat_addr, 5);
-                    HAL_RF_SetRxAddress(&hrf, 0, s_bat_addr, 5);
-                    comm_send_bat_query();
                     comm_process_rx();
+                }
+
+                /* 2. 电池查询：每8s查询一次 */
+                if (bat_query_cnt >= 100) {
+                    bat_query_cnt = 0;
+                    if (s_bat_paired) {
+                        HAL_RF_SetTxAddress(&hrf, s_bat_addr, 5);
+                        HAL_RF_SetRxAddress(&hrf, 0, s_bat_addr, 5);
+                        comm_send_bat_query();
+                        comm_process_rx();
+                    }
                 }
             }
         }
@@ -305,11 +311,11 @@ void RC_Scheduler_Task(RC_Scheduler_t *sched)
             /* TODO: app_lcd_refresh(&s_esc_status, &s_ext_bat_status); */
         }
 
-        /* ========== 200ms: 电量检测/充电状态/关机 ========== */
+        /* ========== 240ms: 电量检测/充电状态/关机 ========== */
         if (now - ts[4] >= 240) {
             ts[4] = now;
             static uint8_t tmp_cnt;
-            if(++tmp_cnt>10)
+            if(++tmp_cnt>20) //4.8s检测一次锂电池电压
             {   tmp_cnt=0;
                 bat_manage_update(&s_bat);
                 uart_printf("ADC: %d, BAT: %dmV SOC:%d%% CHG:%d\r\n",
@@ -331,9 +337,9 @@ void RC_Scheduler_Task(RC_Scheduler_t *sched)
             }
         }
 
-        // gpio_config(Port_Pin(0,0),GPIO_FLOAT,GPIO_PULL_NONE); //uart关掉
-        // gpio_config(Port_Pin(0,1),GPIO_FLOAT,GPIO_PULL_NONE);
-        app_enter_sleep_with_wakeup_by_timer(40, sleep_flag);
+        gpio_config(Port_Pin(0,0),GPIO_FLOAT,GPIO_PULL_NONE); //uart关掉
+        gpio_config(Port_Pin(0,1),GPIO_FLOAT,GPIO_PULL_NONE);
+        app_enter_sleep_with_wakeup_by_timer(40, 1);
     }
 }
 
