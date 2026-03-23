@@ -64,7 +64,6 @@ void platform_reset(uint32_t error)
 }
 
 
-
 int main(void)
 {
     /* ========== Hardware Init ========== */

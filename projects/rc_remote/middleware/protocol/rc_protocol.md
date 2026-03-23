@@ -1,4 +1,4 @@
-# RC Protocol v2 通信协议文档
+# RC Protocol 通信协议文档
 
 ## 1. 概述
 
