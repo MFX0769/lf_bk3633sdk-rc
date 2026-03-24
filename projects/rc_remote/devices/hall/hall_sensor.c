@@ -33,9 +33,9 @@ void hall_hw_init(const hall_hw_config_t *config)
     gpio_config(config->en_ctrl.gpio, GPIO_OUTPUT, GPIO_PULL_NONE);
     gpio_config(config->power_ctrl.gpio, GPIO_OUTPUT, GPIO_PULL_NONE);
 
-    // 初始状态：使能、上电
-    gpio_set(config->en_ctrl.gpio, config->en_ctrl.active_level);      // 使能（有效电平）
-    gpio_set(config->power_ctrl.gpio, config->power_ctrl.active_level); // 上电（有效电平）
+    // 初始状态：失能、下电
+    gpio_set(config->en_ctrl.gpio, !config->en_ctrl.active_level);      // 失能（非有效电平）
+    gpio_set(config->power_ctrl.gpio, !config->power_ctrl.active_level); // 下电（非有效电平）
 
     // 初始化ADC
     adc_init(config->adc_channel, 1);

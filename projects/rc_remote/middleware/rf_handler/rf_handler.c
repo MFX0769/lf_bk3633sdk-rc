@@ -90,7 +90,7 @@ RF_ConfgTypeDef Init_Normal_AckPayload =
         },
         .RxPipes[1] = {
             .PipeNum = 1,
-            .Enable = 1,
+            .Enable = 0,  // 禁用不必要的Pipe
             .AutoAck = 1,
             .EnDynamicPayload = 1,
             .PayloadWidth = 32,
@@ -99,7 +99,7 @@ RF_ConfgTypeDef Init_Normal_AckPayload =
         },
         .RxPipes[2]={
             .PipeNum = 2,
-            .Enable = 1,
+            .Enable = 0,  // 禁用
             .AutoAck = 1,
             .EnDynamicPayload = 1,
             .PayloadWidth = 32,
@@ -108,7 +108,7 @@ RF_ConfgTypeDef Init_Normal_AckPayload =
         },
         .RxPipes[3]={
             .PipeNum = 3,
-            .Enable = 1,
+            .Enable = 0,
             .AutoAck = 1,
             .EnDynamicPayload = 1,
             .PayloadWidth = 32,
@@ -117,7 +117,7 @@ RF_ConfgTypeDef Init_Normal_AckPayload =
         },
         .RxPipes[4]={
             .PipeNum = 4,
-            .Enable = 1,
+            .Enable = 0,
             .AutoAck = 1,
             .EnDynamicPayload = 1,
             .PayloadWidth = 32,
@@ -126,7 +126,7 @@ RF_ConfgTypeDef Init_Normal_AckPayload =
         },
         .RxPipes[5]={
             .PipeNum = 5,
-            .Enable = 1,
+            .Enable = 0,
             .AutoAck = 1,
             .EnDynamicPayload = 1,
             .PayloadWidth = 32,
@@ -161,7 +161,7 @@ RF_ConfgTypeDef Init_Pair_Queue =
         .AddressWidth = 5,
         .TxAddress = {0x10, 0x11, 0x36, 0x00, 0x00},
         .Support_NoAck = 1,             
-        .AutoRetransmitDelay = 5,        // 最大重传延迟 6*250=
+        .AutoRetransmitDelay = 2,        // 最大重传延迟 3*250=
         .AutoRetransmitCount = 3,        // 最大重传次数 3
         
         .RxPipes[0] = {
@@ -175,7 +175,7 @@ RF_ConfgTypeDef Init_Pair_Queue =
         },
         .RxPipes[1] = {
             .PipeNum = 1,
-            .Enable = 1,
+            .Enable = 0,  // 禁用不必要的Pipe
             .AutoAck = 1,
             .EnDynamicPayload = 1,
             .PayloadWidth = 32,
@@ -184,7 +184,7 @@ RF_ConfgTypeDef Init_Pair_Queue =
         },
         .RxPipes[2]={
             .PipeNum = 2,
-            .Enable = 1,
+            .Enable = 0,  // 禁用
             .AutoAck = 1,
             .EnDynamicPayload = 1,
             .PayloadWidth = 32,
@@ -193,7 +193,7 @@ RF_ConfgTypeDef Init_Pair_Queue =
         },
         .RxPipes[3]={
             .PipeNum = 3,
-            .Enable = 1,
+            .Enable = 0,
             .AutoAck = 1,
             .EnDynamicPayload = 1,
             .PayloadWidth = 32,
@@ -202,7 +202,7 @@ RF_ConfgTypeDef Init_Pair_Queue =
         },
         .RxPipes[4]={
             .PipeNum = 4,
-            .Enable = 1,
+            .Enable = 0,
             .AutoAck = 1,
             .EnDynamicPayload = 1,
             .PayloadWidth = 32,
@@ -211,7 +211,7 @@ RF_ConfgTypeDef Init_Pair_Queue =
         },
         .RxPipes[5]={
             .PipeNum = 5,
-            .Enable = 1,
+            .Enable = 0,
             .AutoAck = 1,
             .EnDynamicPayload = 1,
             .PayloadWidth = 32,

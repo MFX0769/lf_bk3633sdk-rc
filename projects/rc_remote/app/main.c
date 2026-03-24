@@ -126,7 +126,7 @@ int main(void)
     /* Set to 0 for normal remote control mode
     * Set to 1 for ESC slave test mode
     * Set to 2 for battery slave test mode */
-    #define TEST_MODE  2
+    #define TEST_MODE  0
 
     /* Forward declarations for test modes */
 
@@ -140,6 +140,15 @@ int main(void)
     #else
     {
         RC_Scheduler_t sched;
+        // gpio_config(KEY1,GPIO_INPUT,GPIO_PULL_LOW);
+        // gpio_config(KEY2,GPIO_INPUT,GPIO_PULL_LOW);
+        // gpio_config(Port_Pin(0,0),GPIO_FLOAT,GPIO_PULL_NONE); //uart关掉
+        // gpio_config(Port_Pin(0,1),GPIO_FLOAT,GPIO_PULL_NONE);
+        // while(1){
+        //     //cpu_24_reduce_voltage_sleep();
+        //     app_enter_sleep_with_wakeup_by_timer(10000, 1);
+        // }
+
         RC_Scheduler_Init(&sched);
         RC_Scheduler_Task(&sched);  /* Normal mode (never returns) */
     }

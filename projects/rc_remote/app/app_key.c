@@ -27,6 +27,7 @@ static void app_key_event_handler(key_id_t id, key_event_t event) {
             } else if(event == KEY_EVT_LONG_PRESS) {
                 uart_printf("KEY1: Long Press\r\n");
                 // TODO: 功能2
+                app_enter_sleep_with_wakeup_by_timer(10000, 1);
             }
             break;
 

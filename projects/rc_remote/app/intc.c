@@ -210,7 +210,8 @@ void intc_init(void)
     //     rwip_isr();
     // }
 
-
+    cpu_24_wakeup();
+    
     if(IntStat & INT_STATUS_DMA_bit)
     {
         fiq_status |= INT_STATUS_DMA_bit;

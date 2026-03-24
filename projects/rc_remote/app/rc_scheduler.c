@@ -183,12 +183,11 @@ void RC_Scheduler_Init(RC_Scheduler_t *sched)
 
     app_key_init();
 
-
+            
     /* 初始化电池管理并锁定电源 */
     bat_manage_init(&s_bat, &s_bat_hw);
     bat_manage_power_on(&s_bat);
 
-    /* 从Flash读取RF设备地址 */
     rf_config_load_from_flash();
     
 
@@ -220,7 +219,14 @@ void RC_Scheduler_Init(RC_Scheduler_t *sched)
     sched->initialized = 1;
     uart_printf("RC_Scheduler_Init done\r\n");
 
-            
+        // gpio_config(KEY1,GPIO_INPUT,GPIO_PULL_LOW);
+        // gpio_config(KEY2,GPIO_INPUT,GPIO_PULL_LOW);
+        // gpio_config(Port_Pin(0,0),GPIO_FLOAT,GPIO_PULL_NONE); //uart关掉
+        // gpio_config(Port_Pin(0,1),GPIO_FLOAT,GPIO_PULL_NONE);
+        // while(1){
+        //     //cpu_24_reduce_voltage_sleep();
+        //     app_enter_sleep_with_wakeup_by_timer(10000, 1);
+        // }
 
 }
 
@@ -412,7 +418,7 @@ void RC_Scheduler_Task(RC_Scheduler_t *sched)
                 /* 2. 电池查询：每8s查询一次 */
                 if (bat_query_cnt >= 100) {
                     if (s_bat_paired) {
-                        delay_ms(4);//电控可能在前面发包了，先延时一会防止打断
+                        //delay_ms(4);//电控可能在前面发包了，先延时一会防止打断
                         comm_send_bat_query();
                         uart_printf("Sending battery query\r\n");
                         bat_query_cnt = 0;
@@ -428,7 +434,7 @@ void RC_Scheduler_Task(RC_Scheduler_t *sched)
         }
 
         /* ========== 240ms: 电量检测/充电状态/关机 ========== */
-        if (now - ts[4] >= 240) {
+        if (now - ts[4] >= 24000) {
             ts[4] = now;
             static uint8_t tmp_cnt;
             if(++tmp_cnt>20) //4.8s检测一次锂电池电压
@@ -443,9 +449,9 @@ void RC_Scheduler_Task(RC_Scheduler_t *sched)
             }
         }
 
-        /* ========== 睡眠判断 ========== */
+        // /* ========== 睡眠判断 ========== */
 
-        //等到rf射频模块空闲为止(最大是maxrt的发送时间)，且加上超时防止意外卡死
+        // //等到rf射频模块空闲为止(最大是maxrt的发送时间)，且加上超时防止意外卡死
         uint32_t start_time = Get_SysTick_ms();
         while(hrf.TxState!=TX_IDLE) {
             if (Get_SysTick_ms() - start_time > 10) { // 超时10ms
@@ -455,6 +461,7 @@ void RC_Scheduler_Task(RC_Scheduler_t *sched)
 
         gpio_config(Port_Pin(0,0),GPIO_FLOAT,GPIO_PULL_NONE); //uart关掉
         gpio_config(Port_Pin(0,1),GPIO_FLOAT,GPIO_PULL_NONE);
+        // delay_ms(3);
         app_enter_sleep_with_wakeup_by_timer(40, allow_sleep_flag);
     }
 }
