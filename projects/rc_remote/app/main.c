@@ -73,6 +73,9 @@ int main(void)
     #if(UART_PRINTF_ENABLE)
     uart2_init(1000000);
     uart_init(1000000);
+    #else
+    gpio_config(Port_Pin(0,0),GPIO_FLOAT,GPIO_PULL_NONE); //uart关掉
+    gpio_config(Port_Pin(0,1),GPIO_FLOAT,GPIO_PULL_NONE);
     #endif
     uart_printf("init uarts\r\n");
 
@@ -123,7 +126,7 @@ int main(void)
     /* Set to 0 for normal remote control mode
     * Set to 1 for ESC slave test mode
     * Set to 2 for battery slave test mode */
-    #define TEST_MODE  0
+    #define TEST_MODE  2
 
     /* Forward declarations for test modes */
 

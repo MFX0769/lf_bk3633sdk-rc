@@ -224,6 +224,126 @@ void RC_Scheduler_Init(RC_Scheduler_t *sched)
 
 }
 
+#if 0
+void RC_Scheduler_Task(RC_Scheduler_t *sched)
+{
+    if (!sched->initialized) return;
+
+    uart_printf("enter RC_Scheduler_Task\r\n");
+    debug_print_rf_registers();
+
+    uint32_t ts[8] = {0};
+    static uint8_t sleep_flag = 1;
+    static uint8_t last_pair = 0;
+
+    while (1) {
+        uint32_t now = Get_SysTick_ms();
+
+        /* ========== 20ms: 按键扫描 ========== */
+        if (now - ts[0] >= 40) {
+            ts[0] = now;
+            app_key_scan(40);
+        }
+
+        /* ========== 配对处理（始终调用，内部自行管理状态） ========== */
+        uint8_t *pair_flag_ptr = app_key_get_pair_flag_ptr();
+        Host_Pairing_Task(pair_flag_ptr);
+
+        if (*pair_flag_ptr) { //如果配对标志被按键设置为1进入配对，记录last_pair状态
+            last_pair = 1;
+            delay_ms(10);
+            sleep_flag = 0;
+        } else {
+            /* 配对刚结束，重新加载所有设备地址 */
+            if (last_pair) {
+                last_pair = 0;
+                tracker_init(&s_tracker);
+                comm_load_all_addrs();
+
+                /* 恢复默认RF地址到电控 */
+                if (s_esc_paired) {
+                    HAL_RF_SetTxAddress(&hrf, s_esc_addr, 5);
+                    HAL_RF_SetRxAddress(&hrf, 0, s_esc_addr, 5);
+                }
+            }
+            sleep_flag = 1;
+
+            /* ========== 80ms: 油门更新+RF发送+处理ACK ========== */
+            if (now - ts[2] >= 80) {
+                ts[2] = now;
+                static uint8_t hb_cnt;
+                hb_cnt++;
+
+                if (s_esc_paired) {
+                    /* 切换到电控地址 */
+                    HAL_RF_SetTxAddress(&hrf, s_esc_addr, 5);
+                    HAL_RF_SetRxAddress(&hrf, 0, s_esc_addr, 5);
+
+                    control_update_and_send();
+
+                    /* 心跳：如果油门没有触发发送，则强制发一帧心跳保活 */
+                    if (hb_cnt >= 10) {
+                        hb_cnt = 0;
+                        if (!tracker_is_pending(&s_tracker)) {
+                            comm_send_ctrl_frame();
+                        }
+                    }
+                }
+                comm_process_rx();
+            }
+
+            /* ========== 500ms: 电池查询 ========== */
+            if (now - ts[1] >= 500) {
+                ts[1] = now;
+                if (s_bat_paired) {
+                    /* 切换到电池地址发送查询 */
+                    HAL_RF_SetTxAddress(&hrf, s_bat_addr, 5);
+                    HAL_RF_SetRxAddress(&hrf, 0, s_bat_addr, 5);
+                    comm_send_bat_query();
+                    comm_process_rx();
+                }
+            }
+        }
+
+        /* ========== 100ms: LCD刷新 ========== */
+        if (now - ts[3] >= 120) {
+            ts[3] = now;
+            /* TODO: app_lcd_refresh(&s_esc_status, &s_ext_bat_status); */
+        }
+
+        /* ========== 200ms: 电量检测/充电状态/关机 ========== */
+        if (now - ts[4] >= 240) {
+            ts[4] = now;
+            static uint8_t tmp_cnt;
+            if(++tmp_cnt>10)
+            {   tmp_cnt=0;
+                bat_manage_update(&s_bat);
+                uart_printf("ADC: %d, BAT: %dmV SOC:%d%% CHG:%d\r\n",
+                        s_bat.data.adc_raw, s_bat.data.voltage_mv, s_bat.data.soc, s_bat.data.chg_state);
+            }
+
+            if (app_key_get_shutdown_flag()) {
+                bat_manage_power_off(&s_bat);
+            }
+        }
+
+        /* ========== 睡眠判断 ========== */
+
+        //等到rf射频模块空闲为止(最大是maxrt的发送时间)，且加上超时防止意外卡死
+        uint32_t start_time = Get_SysTick_ms();
+        while(hrf.TxState!=TX_IDLE) {
+            if (Get_SysTick_ms() - start_time > 10) { // 超时10ms
+                break;
+            }
+        }
+
+        gpio_config(Port_Pin(0,0),GPIO_FLOAT,GPIO_PULL_NONE); //uart关掉
+        gpio_config(Port_Pin(0,1),GPIO_FLOAT,GPIO_PULL_NONE);
+        app_enter_sleep_with_wakeup_by_timer(40, sleep_flag);
+    }
+}
+
+#else
 void RC_Scheduler_Task(RC_Scheduler_t *sched)
 {
     if (!sched->initialized) return;
@@ -274,12 +394,10 @@ void RC_Scheduler_Task(RC_Scheduler_t *sched)
                 static uint8_t bat_query_cnt;
                 hb_cnt++;
                 bat_query_cnt++;
+                comm_process_rx();
 
                 /* 1. 电控通信 */
                 if (s_esc_paired) {
-                    HAL_RF_SetTxAddress(&hrf, s_esc_addr, 5);
-                    HAL_RF_SetRxAddress(&hrf, 0, s_esc_addr, 5);
-
                     control_update_and_send();
 
                     /* 心跳：800ms发一次保活 */
@@ -289,17 +407,15 @@ void RC_Scheduler_Task(RC_Scheduler_t *sched)
                             comm_send_ctrl_frame();
                         }
                     }
-                    comm_process_rx();
                 }
 
                 /* 2. 电池查询：每8s查询一次 */
                 if (bat_query_cnt >= 100) {
-                    bat_query_cnt = 0;
                     if (s_bat_paired) {
-                        HAL_RF_SetTxAddress(&hrf, s_bat_addr, 5);
-                        HAL_RF_SetRxAddress(&hrf, 0, s_bat_addr, 5);
+                        delay_ms(4);//电控可能在前面发包了，先延时一会防止打断
                         comm_send_bat_query();
-                        comm_process_rx();
+                        uart_printf("Sending battery query\r\n");
+                        bat_query_cnt = 0;
                     }
                 }
             }
@@ -339,10 +455,10 @@ void RC_Scheduler_Task(RC_Scheduler_t *sched)
 
         gpio_config(Port_Pin(0,0),GPIO_FLOAT,GPIO_PULL_NONE); //uart关掉
         gpio_config(Port_Pin(0,1),GPIO_FLOAT,GPIO_PULL_NONE);
-        app_enter_sleep_with_wakeup_by_timer(40, 1);
+        app_enter_sleep_with_wakeup_by_timer(40, allow_sleep_flag);
     }
 }
-
+#endif
 void RC_Scheduler_SetESCAddr(RC_Scheduler_t *sched, uint8_t *addr)
 {
 }

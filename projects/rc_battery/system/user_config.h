@@ -18,7 +18,7 @@
 
 /// Use RC 32Kif INTER_RC32K set to 1
 #define INTER_RC32K            1
-#define UART_PRINTF_ENABLE     0
+#define UART_PRINTF_ENABLE     1
 #define DEBUG_HW               1
 #define GPIO_DBG_MSG           0
 #define MALLCO_DEFINE          1
