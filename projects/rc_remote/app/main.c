@@ -73,6 +73,7 @@ int main(void)
     #if(UART_PRINTF_ENABLE)
     //uart2_init(1000000);
     uart_init(1000000);
+    gpio_config(Port_Pin(0,1), GPIO_OUTPUT, GPIO_PULL_LOW);
     #else
     gpio_config(Port_Pin(0,0),GPIO_FLOAT,GPIO_PULL_NONE); //uart关掉
     gpio_config(Port_Pin(0,1),GPIO_FLOAT,GPIO_PULL_NONE);
@@ -161,6 +162,7 @@ int main(void)
 
         RC_Scheduler_Init(&sched);
         RC_Scheduler_Task(&sched);  /* Normal mode (never returns) */
+
     }
     #endif
 

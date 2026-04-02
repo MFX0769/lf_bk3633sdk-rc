@@ -49,7 +49,7 @@ void uart_init(uint32_t baudrate)
     
     // GPIO Config for UART0 (P0.0=TX, P0.1=RX)
     gpio_config(Port_Pin(0,0), GPIO_SC_FUN, GPIO_PULL_HIGH);
-    gpio_config(Port_Pin(0,1), GPIO_SC_FUN, GPIO_PULL_HIGH);
+    //gpio_config(Port_Pin(0,1), GPIO_SC_FUN, GPIO_PULL_HIGH);
     
     // UART0 Control Register Configuration
     UART_REG0X0 = (uart_clk_div << POS_UART_REG0X0_CLK_DIVID) |
@@ -101,7 +101,10 @@ int uart0_printf(const char *fmt,...)
     va_end(ap);
     uart_send(send_buf, n);
     // Optional: Wait for TX FIFO Empty if blocking behavior is desired
-    while(0 == (UART_REG0X2 & (1 << POS_UART_REG0X2_TX_FIFO_EMPTY)));
+    while(0 == (UART_REG0X2 & (1 << POS_UART_REG0X2_TX_FIFO_EMPTY))){
+        gpio_set(Port_Pin(0,1), 1);
+    }
+    gpio_set(Port_Pin(0,1), 0);
 
     return n;
 }

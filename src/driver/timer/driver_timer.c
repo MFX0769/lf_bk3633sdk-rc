@@ -143,7 +143,7 @@ void Timer0_Start(uint8_t index,uint32_t cnt)
     count = (cnt)/1000;
     //g_bk_timer_func[index]=func;
 
-       switch(index)
+    switch(index)
     {
         case 0:
             bk_timer_hit &= ~0x01;

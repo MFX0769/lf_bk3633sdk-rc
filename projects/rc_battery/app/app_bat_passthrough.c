@@ -29,7 +29,7 @@
 #include "rc_protocol.h"
 #include "debug.h"
 
-#define APP_BAT_LOG 0
+#define APP_BAT_LOG 1
 #if (APP_BAT_LOG)
     #define APP_BAT_LOG uart_printf
 #else

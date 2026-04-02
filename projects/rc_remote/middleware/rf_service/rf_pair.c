@@ -17,7 +17,7 @@
 #include "wdt.h"
 #include "rwprf_config.h"
 
-#define PAIR_LOG_EN 0
+#define PAIR_LOG_EN 1
 #if (PAIR_LOG_EN)
     #define pair_log uart_printf
 #else

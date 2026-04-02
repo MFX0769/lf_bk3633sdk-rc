@@ -27,7 +27,8 @@
 #include "hal_drv_rf.h"
 #include "drv_gpio.h"
 #include "lcd_kmg.h"
-
+#include "BK3633_RegList.h"
+#include "reg_intc.h" 
 extern RF_HandleTypeDef hrf;
 #define SCHE_LOG_EN 1
 #if (SCHE_LOG_EN)
@@ -185,6 +186,18 @@ static void comm_load_all_addrs(void)
     }
 }
 
+/* ======================== 调试：KEY1中断唤醒回调 ======================== */
+static void key1_wakeup_isr(void)
+{
+    uart_printf("[KEY1_IRQ] TxSt=%d T1_ctrl=0x%X T1_cnt=%d T1_sys_en=%d intst=0x%X time:%d\r\n",
+                hrf.TxState,
+                addTIMER1_Reg0x3,       /* bit1=timer1_1_en, bit8=timer1_1_int */
+                addTIMER1_Reg0x1,       /* timer1_1 当前计数/装载值 */
+                get_SYS_Reg0x10_int_timer1_en,  /* 系统级timer1中断使能 */
+                intc_status_get(),
+                Get_SysTick_ms());     /* 系统中断状态 */
+}
+
 /* ======================== 调度层 ======================== */
 
 void RC_Scheduler_Init(RC_Scheduler_t *sched)
@@ -229,6 +242,11 @@ void RC_Scheduler_Init(RC_Scheduler_t *sched)
     sched->initialized = 1;
     SCHE_LOG("RC_Scheduler_Init done\r\n");
 
+    /* 配置KEY1 GPIO中断，按下可唤醒卡死的sleep，用于调试 */
+    gpio_config(KEY1, GPIO_INPUT, GPIO_PULL_LOW);
+    gpio_int_enable(KEY1, GPIO_INT_EDGE_RISING, key1_wakeup_isr);
+    SCHE_LOG("KEY1 wakeup IRQ enabled (gpio=%d)\r\n", KEY1);
+
         // gpio_config(KEY1,GPIO_INPUT,GPIO_PULL_LOW);
         // gpio_config(KEY2,GPIO_INPUT,GPIO_PULL_LOW);
         // gpio_config(Port_Pin(0,0),GPIO_FLOAT,GPIO_PULL_NONE); //uart关掉
@@ -256,7 +274,7 @@ void RC_Scheduler_Task(RC_Scheduler_t *sched)
     static uint8_t old_bat_paired, old_esc_paired;
 
     while (1) {
-
+        
         /* ========== 40ms: 按键扫描 ========== */
         if (Get_SysTick_ms() - ts[0] >= 40) {
             ts[0] = Get_SysTick_ms();
@@ -315,12 +333,12 @@ void RC_Scheduler_Task(RC_Scheduler_t *sched)
                 ts[2] = Get_SysTick_ms();
                 static uint8_t hb_cnt;
                 hb_cnt++;
-                SCHE_LOG("[T1]%d\r\n", ts[2]);
+                //SCHE_LOG("[T1]%d\r\n", ts[2]);
                 comm_process_rx();
 
                 if (s_esc_paired) {
                     control_update_and_send();
-                    SCHE_LOG("[T1a]\r\n");
+                    //SCHE_LOG("[T1a]\r\n");
 
                     /* 心跳：800ms发一次保活 */
                     if (hb_cnt >= 10) {
@@ -330,22 +348,22 @@ void RC_Scheduler_Task(RC_Scheduler_t *sched)
                         }
                     }
                 }
-                SCHE_LOG("[T1b]\r\n");
+                //SCHE_LOG("[T1b]\r\n");
             }
 
             /* ========== 800ms: 电池查询（独立时隙，避免与电控冲突） ========== */
-            if (Get_SysTick_ms() - ts[5] >= 200) {
+            if (Get_SysTick_ms() - ts[5] >= 800) {
                 ts[5] = Get_SysTick_ms();
-                SCHE_LOG("[T2]%d\r\n", ts[5]);
+                //SCHE_LOG("[T2]%d\r\n", ts[5]);
                 if (s_bat_paired) {
                     /* 等待电控TX完成 */
                     uint32_t tw = Get_SysTick_ms();
                     while (hrf.TxState != TX_IDLE) {
                         if (Get_SysTick_ms() - tw > 10) break;
                     }
-                    SCHE_LOG("[T2a]wait=%d\r\n", Get_SysTick_ms() - tw);
+                    //SCHE_LOG("[T2a]wait=%d\r\n", Get_SysTick_ms() - tw);
                     comm_send_bat_query();
-                    SCHE_LOG("[T2b]\r\n");
+                    //SCHE_LOG("[T2b]\r\n");
                 }
             }
         }
@@ -353,18 +371,18 @@ void RC_Scheduler_Task(RC_Scheduler_t *sched)
         /* ========== 120ms: LCD刷新 ========== */
         if (Get_SysTick_ms() - ts[3] >= 120) {
             ts[3] = Get_SysTick_ms();
-            SCHE_LOG("[T3]%d\r\n", ts[3]);
+            //SCHE_LOG("[T3]%d\r\n", ts[3]);
             #if(ENABLE_LED_DISPLAY)
             update_ui_test(0, s_ext_bat_status.soc,
                            s_ui_mode, s_bat_paired, s_bat_addr);
             #endif
-            SCHE_LOG("[T3a]\r\n");
+            //SCHE_LOG("[T3a]\r\n");
         }
 
-        /* ========== 24s: 电量检测/充电状态/关机 ========== */
-        if (Get_SysTick_ms() - ts[4] >= 24000) {
+        /* ========== 240ms: 电量检测/充电状态/关机 ========== */
+        if (Get_SysTick_ms() - ts[4] >= 240) {
             ts[4] = Get_SysTick_ms();
-            SCHE_LOG("[T4]%d\r\n", ts[4]);
+            //SCHE_LOG("[T4]%d\r\n", ts[4]);
             static uint8_t tmp_cnt;
             if(++tmp_cnt>20) //4.8s检测一次锂电池电压
             {   tmp_cnt=0;
@@ -379,7 +397,7 @@ void RC_Scheduler_Task(RC_Scheduler_t *sched)
         }
 
         /* ========== 睡眠判断 ========== */
-        SCHE_LOG("[T5]\r\n");
+        //SCHE_LOG("[T5]\r\n");
         //等到rf射频模块空闲为止(最大是maxrt的发送时间)，且加上超时防止意外卡死
         uint32_t start_time = Get_SysTick_ms();
         while(hrf.TxState!=TX_IDLE) {
@@ -387,13 +405,14 @@ void RC_Scheduler_Task(RC_Scheduler_t *sched)
                 break;
             }
         }
-        SCHE_LOG("[T5a]st=%d\r\n", hrf.TxState);
+        //SCHE_LOG("[T5a]st=%d\r\n", hrf.TxState);
 
         // gpio_config(Port_Pin(0,0),GPIO_FLOAT,GPIO_PULL_NONE); //uart关掉
         // gpio_config(Port_Pin(0,1),GPIO_FLOAT,GPIO_PULL_NONE);
         // delay_ms(3);
         app_enter_sleep_with_wakeup_by_timer(40, allow_sleep_flag);
-        SCHE_LOG("[T6]\r\n");
+        uart_printf(".\r\n");
+        //SCHE_LOG("[T6]\r\n");
     }
 }
 #endif

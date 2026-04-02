@@ -81,12 +81,12 @@ static void app_key_event_handler(key_id_t id, key_event_t event) {
 void app_key_init(void) {
     // 配置按键（注意：按下=高电平）
     const key_config_t keys[] = {
-        {KEY_ID_LEFT,   KEY1, 1000, true},         // KEY1: 高电平有效
+        //{KEY_ID_LEFT,   KEY1, 1000, true},         // KEY1: 高电平有效
         {KEY_ID_RIGHT,  KEY2, 1000, true},         // KEY2: 高电平有效
         {KEY_ID_POWER,  KEY_SYS_PWR, 3000, true},  // KEY_SYS_PWR: 高电平有效（长按3s）
     };
 
-    key_init(keys, 3);
+    key_init(keys, sizeof(keys)/sizeof(keys[0]));
     key_register_callback(app_key_event_handler);
 
     uart_printf("app_key_init done\r\n");

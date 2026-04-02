@@ -17,7 +17,7 @@ static void Inc_Systick(void)
     //溢出中断更新
     overflow_cnt++;
     //翻转电平测试
-    gpio_toggle(Port_Pin(0,7));
+    //gpio_toggle(Port_Pin(0,7));
     //uart_printf("systick_irq:%d\r\n",Systick_ms);
 }
 static void timer_sys_timebase_init(void)
@@ -48,6 +48,7 @@ uint32_t read_timer1_0_cnt(void)
 
     return addTIMER1_Reg0x5;
 }
+
 uint32_t Get_SysTick_ms(void)
 {
     uint32_t overflow_cnt_tmp;
@@ -87,6 +88,7 @@ static void timer1_1_cb(void)
 {
     //关闭timer1_1
     clrf_TIMER1_Reg0x3_timer1_en;
+    //uart_printf("timer1_1_cb\r\n");
 }
 static void timer1_1_init(void)
 {

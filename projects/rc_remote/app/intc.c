@@ -12,6 +12,7 @@
 //#include "app.h"
 #include "hal_drv_rf.h"
 #include "rf_handler.h"
+#include "user_config.h"
 
 
 #if(ADC_DRIVER)
@@ -73,8 +74,8 @@ void intc_init(void)
   setf_SYS_Reg0x10_int_uart0_en; //enable uart0_int irq
   clrf_SYS_Reg0x11_int_uart0_pri; //uart.系统级中断设为irq
 
-  setf_SYS_Reg0x10_int_uart1_en; //enable uart1_int irq
-  clrf_SYS_Reg0x11_int_uart1_pri; //uart1系统级中断设为irq
+  //setf_SYS_Reg0x10_int_uart1_en; //uart1未初始化(uart2_init被注释)，不使能中断
+  //clrf_SYS_Reg0x11_int_uart1_pri;
 
   setf_SYS_Reg0x10_int_bk24_en; //使能bk24系统级中断
   //setf_SYS_Reg0x11_int_bk24_pri; //bk24系统级中断设为fiq
@@ -103,9 +104,11 @@ void intc_init(void)
 
     if(IntStat & INT_BK24_bit)
     {
-        //uart_printf("in intc_fiq\n");
         irq_status |= INT_BK24_bit;
-        HAL_RF_IRQ_Handler(&hrf);
+        // 仅在RF上电状态才访问RF寄存器，防止sleep唤醒时RF已下电导致卡死
+        if(__HAL_RF_GetPowerState()) {
+            HAL_RF_IRQ_Handler(&hrf);
+        }
     }
 
     // call the function handler
