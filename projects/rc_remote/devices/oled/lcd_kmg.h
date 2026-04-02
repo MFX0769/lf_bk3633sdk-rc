@@ -37,8 +37,15 @@ void test_lcd2(void);
 #define UI_MODE_PAIRING   1
 #define UI_MODE_PAIR_OK   2
 #define UI_MODE_PAIR_FAIL 3
+
+/* 动力电池连接状态 */
+#define BAT_CONN_UNPAIRED  0
+#define BAT_CONN_OFFLINE   1
+#define BAT_CONN_ONLINE    2
+
 void update_ui_test(uint8_t hall, uint8_t bat_soc,
-                    uint8_t ui_mode, uint8_t bat_paired, const uint8_t *bat_addr);
+                    uint8_t ui_mode, uint8_t bat_paired, const uint8_t *bat_addr,
+                    uint8_t bat_conn);
 void update_ui(int tatal_kms, uint8_t battery_capacity, uint16_t speed);
 // void Kamingo_Show_Battery(uint16_t x, uint16_t y, uint8_t battery_capacity, uint16_t fc, uint16_t bc, uint8_t sizey) ;
 void Kamingo_Show_Battery(uint16_t x, uint16_t y, uint8_t battery_capacity, uint16_t fc, uint16_t bc, uint8_t sizey, bool is_controller_battery);

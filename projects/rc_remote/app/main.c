@@ -128,7 +128,7 @@ int main(void)
     OLED_Init();
     uart_printf("OLED_Init done:%d\r\n", Get_SysTick_ms());
     LCD_Fill(0, 0, LCD_W, LCD_H, BLACK);
-    update_ui_test(0, 0, UI_MODE_NORMAL, 0, NULL);
+    update_ui_test(0, 0, UI_MODE_NORMAL, 0, NULL,    BAT_CONN_OFFLINE);
     uart_printf("init LED display done:%d\r\n", Get_SysTick_ms());
     #endif
 

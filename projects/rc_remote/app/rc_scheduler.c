@@ -65,6 +65,8 @@ static uint8_t            s_bat_paired;        /* 电池已配对标志 */
 static bat_status_data_t  s_ext_bat_status;    /* 外部电池状态 */
 static uint8_t            s_ext_bat_online;    /* 外部电池在线标志 */
 static uint8_t            s_bat_query_seq;     /* 电池查询seq */
+static uint32_t           s_bat_last_rx_tick;  /* 最后收到电池回包的时间 */
+#define BAT_ONLINE_TIMEOUT_MS  3000            /* 3s无回包视为离线 */
 
 static uint8_t            s_ui_mode;           /* UI显示模式 */
 static uint32_t           s_ui_result_tick;    /* 配对结果显示起始时间 */
@@ -123,6 +125,7 @@ static void comm_process_rx(void)
             if (plen == sizeof(bat_status_data_t)) {
                 memcpy(&s_ext_bat_status, payload, sizeof(bat_status_data_t));
                 s_ext_bat_online = 1;
+                s_bat_last_rx_tick = Get_SysTick_ms();
                 SCHE_LOG("power_battery: temp=%d soc=%d status=0x%02X\r\n",
                             s_ext_bat_status.temperature - 40,
                             s_ext_bat_status.soc,
@@ -373,8 +376,19 @@ void RC_Scheduler_Task(RC_Scheduler_t *sched)
             ts[3] = Get_SysTick_ms();
             //SCHE_LOG("[T3]%d\r\n", ts[3]);
             #if(ENABLE_LED_DISPLAY)
-            update_ui_test(0, s_ext_bat_status.soc,
-                           s_ui_mode, s_bat_paired, s_bat_addr);
+            {
+                uint8_t bat_conn;
+                if (!s_bat_paired) {
+                    bat_conn = BAT_CONN_UNPAIRED;
+                } else if (Get_SysTick_ms() - s_bat_last_rx_tick > BAT_ONLINE_TIMEOUT_MS) {
+                    bat_conn = BAT_CONN_OFFLINE;
+                } else {
+                    bat_conn = BAT_CONN_ONLINE;
+                }
+                update_ui_test(0, s_ext_bat_status.soc,
+                               s_ui_mode, s_bat_paired, s_bat_addr,
+                               bat_conn);
+            }
             #endif
             //SCHE_LOG("[T3a]\r\n");
         }

@@ -1837,12 +1837,28 @@ void update_ui(int tatal_kms, uint8_t battery_capacity, uint16_t speed)
 
 
 void update_ui_test(uint8_t hall, uint8_t bat_soc,
-                    uint8_t ui_mode, uint8_t bat_paired, const uint8_t *bat_addr)
+                    uint8_t ui_mode, uint8_t bat_paired, const uint8_t *bat_addr,
+                    uint8_t bat_conn)
 {
     static uint8_t last_mode = 0xFF;
     static uint8_t last_paired = 0xFF;
     static uint8_t last_addr[5];
+    static uint8_t last_bat_conn = 0xFF;
     static const char hex_tbl[] = "0123456789ABCDEF";
+
+    /* ---- 电池连接状态行: 变化时才刷 (x=20, sizey=32, 占x=20..51) ---- */
+    if (bat_conn != last_bat_conn) {
+        const char *txt;
+        uint16_t    color;
+        switch (bat_conn) {
+        case BAT_CONN_OFFLINE: txt = "BatOFF"; color = RED;   break;
+        case BAT_CONN_ONLINE:  txt = "Bat OK"; color = GREEN; break;
+        default:               txt = "NoPair"; color = GRAY;  break;
+        }
+        LCD_ShowStr_Hor_dma(20, 239, txt, color, BLACK, 32);
+        Delay_ms(1);
+        last_bat_conn = bat_conn;
+    }
 
     /* ---- 模式行: 变化时才刷 (x=52, 4字符) ---- */
     if (ui_mode != last_mode) {
